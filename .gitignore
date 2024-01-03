@@ -1,0 +1,6 @@
+__pycache__
+.venv
+.vscode
+.DS_Store
+staticfiles
+static_cdn_test

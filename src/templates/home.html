@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<H1>{{title}}</H1>
+<div class="row">
+
+    {% for post in object_list %}
+    <div class='col-12 col-md-4 mx-auto'>
+    {% include 'blog/list_inline.html' with blog_post=post detail=False %}
+</div>
+    {% endfor %}
+    </div>
+<a href='blog' class="btn btn-primary"> More Blog Posts... </a>
+{% endblock %}
+
+{% block back %}
+{% endblock %}
