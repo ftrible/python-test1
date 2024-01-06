@@ -29,7 +29,7 @@ def login_view(request):
         else:
             pass # incorrect user                                   
     else:                                                                    
-        form = LoginForm()                                                   
+        form = AuthenticationForm()                                                   
     return render(request, 'login.html', {'form': form})
 
 
@@ -38,7 +38,7 @@ def forgot_password(request):
     form = PasswordResetForm(request.POST)
     if request.method == 'POST':
         if form.is_valid():
-                form.save(request=request) #, email_template_name='path/to/your/email_template.html')
+                form.save(request=request) 
                 return redirect('home') 
         else:
             form.add_error(None, "Invalid email") 
