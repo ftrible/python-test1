@@ -1,6 +1,6 @@
 from django import forms
 from .models import BlogPost
-from django.contrib.auth.forms import AuthenticationForm   
+
 
 class BlogForm(forms.ModelForm):
     class Meta:
@@ -21,10 +21,4 @@ def clean_title(self, *args, **kwargs):
        raise forms.ValidationError("This title already exists")
    return title
     
-                     
-                                                                                
-class LoginForm(AuthenticationForm):                                         
-    username = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control',        
-   'placeholder': 'User Name'}))                                                
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control',    
-   'placeholder':'Password'}))   
+ 

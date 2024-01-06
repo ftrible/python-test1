@@ -14,16 +14,6 @@ def home_page(request):
     context ={"object_list": queryset[:2]}
     return render(request,template, context)
 
-def contact_page(request):
-    context ={"title":'Contact'}
-    template="contact.html"
-    return render(request,template, context)
-
-def about_page(request):
-    context ={"title":'About'}
-    template="about.html"
-    return render(request,template, context)
-
 # CRUD
 # GET : retrieve, list
 # POST create, update, delete
@@ -60,20 +50,14 @@ def blog_list(request):
 
 
 def blog_detail(request,slug_id):
-    queryset=BlogPost.objects.filter(slug=slug_id)
-    if queryset.count == 0:
-        raise Http404
-    pobj=queryset.first()
+    pobj = get_object_or_404(BlogPost,slug=slug_id)
     context ={"title":'Blog', "post": pobj}
     template="blog/view.html"
     return render(request,template, context)
 
 @login_required(login_url='/login')
 def blog_update(request,slug_id):
-    queryset=BlogPost.objects.filter(slug=slug_id)
-    if queryset.count == 0:
-        raise Http404
-    pobj=queryset.first()
+    pobj = get_object_or_404(BlogPost,slug=slug_id)
     form= BlogForm(request.POST or None, request.FILES or None,instance=pobj)
     print(request.POST)
     print(request.FILES)
@@ -86,10 +70,7 @@ def blog_update(request,slug_id):
 
 @login_required(login_url='/login')
 def blog_delete(request,slug_id):
-    queryset=BlogPost.objects.filter(slug=slug_id)
-    if queryset.count == 0:
-        raise Http404
-    pobj=queryset.first()
+    pobj = get_object_or_404(BlogPost,slug=slug_id)
     if request.method == 'POST':
         pobj.delete()
         return redirect("/blog")
@@ -97,24 +78,4 @@ def blog_delete(request,slug_id):
     template="blog/delete.html"
     return render(request,template, context)
 
-from django.shortcuts import render, redirect                                
-from django.contrib.auth import authenticate, login                          
-from .forms import LoginForm                                                 
-                                                                                
-def login_view(request):                                                     
-    if request.method == 'POST':                                             
-        form = LoginForm(request.POST)                 
-        if form.is_valid():  
-            print(form.cleaned_data)                                                   
-            username = form.cleaned_data.get('username')                     
-            password = form.cleaned_data.get('password')                     
-            user = authenticate(username=username, password=password)  
-            print(user)      
-            if user is not None:                                             
-                login(request, user)                                         
-                return redirect('home') 
-            else:                                                            
-                form.add_error(None, "Invalid username or password")                                     
-    else:                                                                    
-        form = LoginForm()                                                   
-    return render(request, 'login.html', {'form': form}) 
+ 
