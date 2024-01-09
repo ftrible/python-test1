@@ -20,7 +20,7 @@ from .views import contact_page,login_view, about_page,forgot_password
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path("", include("test1.urls")),
+    path("", include("blog.urls")),
     path('contact/', contact_page, name='contact'),
     path('login/', login_view, name='login'),
     path('forgot/',auth_views.PasswordResetView.as_view(template_name='simple.html',success_url=reverse_lazy('password_reset_done')),name='forgot'),

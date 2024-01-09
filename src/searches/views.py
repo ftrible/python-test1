@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from .models import SearchQuery
-from test1.models import BlogPost
+from blog.models import BlogPost
 
 def search_view(request):
     query=request.GET.get('q', None)
