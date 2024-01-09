@@ -5,13 +5,11 @@
         {% if item.image %}
             <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid"/>
         {% endif%}
-        <h5 class="card-title">{{item.title}}</h5>
-        <small class="text-muted">{{item.publish_date}} </small>
+        <h5 class="card-title">{{item.location}}</h5>
         {% if detail%}
-        <p class="card-text">{{item.content|linebreaks}}</p>
+        <p class="card-text">Detailed content</p>
         {% else%}
-        <p class="card-text">{{item.content|linebreaks|truncatewords:30}}</p>
-        <a class="card-link btn btn-primary" href="{{item.get_absolute_url}}">View</a>
+        <p class="card-text">Normal content}</p>
         {% if request.user == post.user%}
         <a href="{{post.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
         <a href="{{post.get_delete_url}}" class="card-link btn btn-warning">Delete</a>

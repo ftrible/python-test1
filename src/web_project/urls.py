@@ -21,6 +21,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path("", include("blog.urls")),
+    path("", include("hmeteo.urls")),
     path('contact/', contact_page, name='contact'),
     path('login/', login_view, name='login'),
     path('forgot/',auth_views.PasswordResetView.as_view(template_name='simple.html',success_url=reverse_lazy('password_reset_done')),name='forgot'),

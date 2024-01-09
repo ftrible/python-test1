@@ -25,7 +25,7 @@ class TheManager(models.Manager):
         return self.published().search(query)
     
 class TheItem(models.Model):
-    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='blog_post')
     image = models.ImageField(upload_to="image/", blank=True, null=True)
     title = models.CharField(max_length=144)
     slug = models.SlugField(unique=True)

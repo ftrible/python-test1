@@ -15,7 +15,7 @@
         {% endif %}   
         {% for post in blog_list %}
         <div class='col-12 col-md-4 mx-auto'>
-             {% include 'blog/list_inline.html' with blog_post=post detail=False %}
+             {% include 'blog/list_inline.html' with item=post detail=False %}
              </div>
         {% endfor %}
     </div>

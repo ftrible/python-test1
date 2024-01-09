@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <H1>{{title}}</H1>
+<a href='blog' class="btn btn-primary"> More Blog Posts... </a>
+<a href='hmeteo' class="btn btn-primary"> More Meteos... </a>
 <div class="row">
-
     {% for post in object_list %}
     <div class='col-12 col-md-4 mx-auto'>
-    {% include 'list_inline.html' with blog_post=post detail=False %}
+    {% include 'list_inline.html' with item=post detail=False %}
 </div>
     {% endfor %}
     </div>
-<a href='blog' class="btn btn-primary"> More Blog Posts... </a>
 {% endblock %}
 
 {% block back %}

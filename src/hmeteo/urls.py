@@ -3,7 +3,6 @@ from blog import views
 from searches.views import search_view
 from django.conf import settings
 urlpatterns = [
-    path('', views.home_page, name="home"),
     path('hmeteo/', views.list, name='list'),
 #    path('search/', search_view, name='search'),
     path('hmeteo/<str:slug_id>/', views.detail, name='detail'),
