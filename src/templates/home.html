@@ -5,7 +5,7 @@
 
     {% for post in object_list %}
     <div class='col-12 col-md-4 mx-auto'>
-    {% include 'blog/list_inline.html' with blog_post=post detail=False %}
+    {% include 'list_inline.html' with blog_post=post detail=False %}
 </div>
     {% endfor %}
     </div>

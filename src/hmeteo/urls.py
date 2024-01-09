@@ -4,12 +4,12 @@ from searches.views import search_view
 from django.conf import settings
 urlpatterns = [
     path('', views.home_page, name="home"),
-    path('blog/', views.list, name='list'),
-    path('search/', search_view, name='search'),
-    path('blog/<str:slug_id>/', views.detail, name='detail'),
-    path('blog/<str:slug_id>/delete/', views.delete, name='delete'),
-    path('blog/<str:slug_id>/edit/', views.update, name='edit'),
-    path('blog-new', views.create, name='new'),
+    path('hmeteo/', views.list, name='list'),
+#    path('search/', search_view, name='search'),
+    path('hmeteo/<str:slug_id>/', views.detail, name='detail'),
+    path('hmeteo/<str:slug_id>/delete/', views.delete, name='delete'),
+    path('hmeteo/<str:slug_id>/edit/', views.update, name='edit'),
+    path('hmeteo-new', views.create, name='new'),
 ]
 # to find static and media files
 if settings.DEBUG:  

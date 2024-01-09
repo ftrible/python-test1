@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db.models import Q
 # Create your models here.
 User = settings.AUTH_USER_MODEL
-class BlogPostQuerySet(models.QuerySet):
+class TheQuerySet(models.QuerySet):
     def published(self):
         now=timezone.now()
         return self.filter(publish_date__lte=now)
@@ -14,9 +14,9 @@ class BlogPostQuerySet(models.QuerySet):
                 Q(user__username__icontains=query))
         return self.filter(lookup)
         
-class BlogPostManager(models.Manager):
+class TheManager(models.Manager):
     def get_queryset(self):
-        return BlogPostQuerySet(self.model, using=self._db)
+        return TheQuerySet(self.model, using=self._db)
     def published(self):
         return self.get_queryset().published()
     def search(self, query=None):
@@ -24,7 +24,7 @@ class BlogPostManager(models.Manager):
             return self.get_queryset().none()
         return self.published().search(query)
     
-class BlogPost(models.Model):
+class TheItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     image = models.ImageField(upload_to="image/", blank=True, null=True)
     title = models.CharField(max_length=144)
@@ -33,7 +33,7 @@ class BlogPost(models.Model):
     publish_date = models.DateTimeField(auto_now=False, auto_now_add=False, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    objects=BlogPostManager()
+    objects=TheManager()
 
     class Meta:
         ordering=['-publish_date', '-updated', '-timestamp']

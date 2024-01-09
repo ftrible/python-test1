@@ -1,10 +1,10 @@
 from django import forms
-from .models import BlogPost
+from .models import TheItem
 
 
-class BlogForm(forms.ModelForm):
+class ObjForm(forms.ModelForm):
     class Meta:
-        model=BlogPost
+        model=TheItem
         fields=['title','slug','image', 'content', 'publish_date']
 #   title=forms.CharField()
 #    slug=forms.SlugField()
@@ -14,7 +14,7 @@ def clean_title(self, *args, **kwargs):
    title=self.cleaned_data.get('title')
    instance=self.instance
    
-   qs=BlogPost.objects.filter(title=title)
+   qs=TheItem.objects.filter(title=title)
    if instance is not None:
         qs.exclude(pk=instance.pk)
    if qs.exists():
