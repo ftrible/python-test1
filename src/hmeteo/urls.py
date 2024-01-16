@@ -1,5 +1,5 @@
 from django.urls import path, re_path
-from blog import views
+from hmeteo import views
 from searches.views import search_view
 from django.conf import settings
 urlpatterns = [

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<form method="POST" action="blog-new" enctype="multipart/form-data"> {% csrf_token %}
+<form method="POST" action="hmeteo-new" enctype="multipart/form-data"> {% csrf_token %}
     {{ form.as_p }}
     <button class ="btn" type="Submit">OK</button>
     <button class ="btn" type="Cancel">Cancel</button>

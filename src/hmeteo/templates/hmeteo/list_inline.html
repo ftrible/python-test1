@@ -1,0 +1,81 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="card">
+    <div class="card-header">from {{item.user}}</div>
+    <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
+        {% if item.image %}
+        <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid" />
+        {% endif%}
+        <h5 class="card-title">{{item.location}}</h5>
+        {% if detail%}
+        <p class="card-text">{{item.lat}}</p>
+        <p class="card-text">{{item.lng}} </p>
+        {% if displaylist%}
+        <ul>
+            {% for entry in item.get_historical_temperature %}
+            <li>{{ entry.date|date:"l, F j Y" }}: from {{ entry.tmin|floatformat:1 }} to {{ entry.tmax|floatformat:1 }}°C</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
+        <script type="text/javascript">
+            var ctx = document.getElementById('temperatureChart').getContext('2d');
+            var dates = {{ item.get_historical_temperature.dates|safe }};
+            var tmax = {{ item.get_historical_temperature.tmax| safe }};
+            var tmin = {{ item.get_historical_temperature.tmin| safe }};
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [
+                    {
+                        label: 'Temperature Max',
+                        data: tmax,
+                        borderColor: 'rgba(255,0,0, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                    },
+                    {
+                        label: 'Temperature Min',
+                        data: tmin,
+                        borderColor: 'rgba(0,0,255, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: [{
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'dddd, MMMM D'
+                                }
+                            }
+                        }],
+                        y: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        </script>
+        {% endif %}
+        {% else %}
+        <p class="card-text">Small content</p>
+        {% if nobuttons%}
+        {% else %}
+        <a href="{{item.get_absolute_url}}" class="card-link btn btn-primary">View</a>
+        {% if request.user == item.user%}
+        <a href="{{item.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
+        <a href="{{item.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
+        {% endif %}
+        {% endif %}
+        {% endif%}
+    </div>
+
+</div>

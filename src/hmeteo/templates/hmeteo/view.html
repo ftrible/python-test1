@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+{% if request.user.is_authenticated%}
+{% if request.user == item.user%}
+<div class="col-12">
+<a href="{{item.get_edit_url}}" class="btn btn-primary">Edit</a>
+<a href="{{item.get_delete_url}}" class="btn btn-primary">Delete</a>
+</div>
+{% endif %}
+{% endif %}
+{% include 'hmeteo/list_inline.html' with item=item detail=True %}
+{% endblock %}
