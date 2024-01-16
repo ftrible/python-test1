@@ -31,7 +31,7 @@ def list(request):
     else:
         queryset=HTheItem.objects.all().published()
     template='hmeteo/list.html'
-    context ={"title":'All Meteos', "object_list": queryset}
+    context ={"title":'All Locations', "object_list": queryset}
     return render(request,template, context)
 
 
