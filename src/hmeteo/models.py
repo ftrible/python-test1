@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Q
 from openmeteo_requests import Client
 from retry_requests import retry
-from datetime import datetime
+from datetime import datetime, timedelta
 from requests_cache import CachedSession
 import pandas as pd
 import json
@@ -16,8 +16,8 @@ class HTheItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='hmeteo')
     image = models.ImageField(upload_to="image/", blank=True, null=True)
     location = models.CharField(max_length=144)
-    lat=models.FloatField(null=True, editable=False, verbose_name='Latitude')
-    lng=models.FloatField(null=True, editable=False, verbose_name='Longitude')
+    lat=models.FloatField(null=True, verbose_name='Latitude')
+    lng=models.FloatField(null=True, verbose_name='Longitude')
     slug = models.SlugField(unique=True)
  
     class Meta:
@@ -33,18 +33,27 @@ class HTheItem(models.Model):
         retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
         openmeteo = Client(session = retry_session)
         url = "https://archive-api.open-meteo.com/v1/archive"
+        # Get the current date
+        current_date = datetime.now()
+        # Calculate the start date by subtracting 10 days from the current date
+        start_date = current_date - timedelta(days=10)
+        end_date = current_date - timedelta(days=1)
+        # Format the dates as strings in the required format ("%Y-%m-%d")
+        formatted_start_date = start_date.strftime("%Y-%m-%d")
+        formatted_end_date = end_date.strftime("%Y-%m-%d")
         params = {
             "latitude": self.lat,
             "longitude": self.lng,
-            "start_date": '2023-12-31', #start_date.strftime("%Y-%m-%d"),
-            "end_date":'2024-01-10', #end_date.strftime("%Y-%m-%d"),
+            "start_date": formatted_start_date,
+            "end_date":formatted_end_date,
 	        "daily": ["temperature_2m_max", "temperature_2m_min"],
 	        "timezone": "auto"
         }
+#        print(params)
         try:
             responses = openmeteo.weather_api(url, params=params)
             response = responses[0]
-            # Process hourly data. The order of variables needs to be the same as requested.
+            # Process daily data. The order of variables needs to be the same as requested.
             daily = response.Daily()
             daily_temperature_max = daily.Variables(0).ValuesAsNumpy()
             daily_temperature_min = daily.Variables(1).ValuesAsNumpy()

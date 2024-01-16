@@ -1,47 +1,37 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="card">
     <div class="card-header">from {{item.user}}</div>
     <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
         {% if item.image %}
-        <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid" />
+        <img id="bcki{{item.slug}}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
         {% endif%}
         <h5 class="card-title">{{item.location}}</h5>
-        {% if detail%}
-        <p class="card-text">{{item.lat}}</p>
-        <p class="card-text">{{item.lng}} </p>
-        {% if displaylist%}
-        <ul>
-            {% for entry in item.get_historical_temperature %}
-            <li>{{ entry.date|date:"l, F j Y" }}: from {{ entry.tmin|floatformat:1 }} to {{ entry.tmax|floatformat:1 }}°C</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <canvas id="temperatureChart" width="400" height="200"></canvas>
+        <canvas id="tc{{item.slug}}" class="card-body"></canvas>
         <script type="text/javascript">
-            var ctx = document.getElementById('temperatureChart').getContext('2d');
-            var dates = {{ item.get_historical_temperature.dates|safe }};
-            var tmax = {{ item.get_historical_temperature.tmax| safe }};
-            var tmin = {{ item.get_historical_temperature.tmin| safe }};
-
-            var myChart = new Chart(ctx, {
+            var ctx{{item.slug}} = document.getElementById('tc{{item.slug}}').getContext('2d');
+            var dates{{item.slug}} = {{ item.get_historical_temperature.dates| safe }};
+            var tmax{{item.slug}} = {{ item.get_historical_temperature.tmax| safe }};
+            var tmin{{item.slug}} = {{ item.get_historical_temperature.tmin| safe }};
+            var bi{{item.slug}} = document.getElementById('bcki{{item.slug}}')
+            bi{{item.slug}}.hidden=true;
+            var myChart = new Chart(ctx{{item.slug}}, {
                 type: 'bar',
                 data: {
-                    labels: dates,
+                    labels: dates{{item.slug}},
                     datasets: [
-                    {
-                        label: 'Temperature Max',
-                        data: tmax,
-                        borderColor: 'rgba(255,0,0, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                    },
-                    {
-                        label: 'Temperature Min',
-                        data: tmin,
-                        borderColor: 'rgba(0,0,255, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                    }
+                        {
+                            label: 'Temperature Max',
+                            data: tmax{{item.slug}},
+                            backgroundColor: 'rgba(255,0,0, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                        },
+                        {
+                            label: 'Temperature Min',
+                            data: tmin{{item.slug}},
+                            backgroundColor: 'rgba(0,0,255, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                        }
                     ]
                 },
                 options: {
@@ -61,11 +51,21 @@
                             }
                         }]
                     }
-                }
+                },
+                plugins: [{
+                    beforeDraw: function(chart) {
+                        var ctx = chart.ctx;
+                        var width = chart.width;
+                        var height = chart.height;
+                        ctx.globalAlpha = 0.5;
+                        ctx.globalCompositeOperation = 'destination-over';
+                        ctx.drawImage(bi{{item.slug}}, 0, 0, width, height);
+                        ctx.globalCompositeOperation = 'source-over';
+                        ctx.globalAlpha = 1;
+                    }
+                }]
             });
         </script>
-        {% endif %}
-        {% else %}
         <p class="card-text">Small content</p>
         {% if nobuttons%}
         {% else %}
@@ -75,7 +75,6 @@
         <a href="{{item.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
         {% endif %}
         {% endif %}
-        {% endif%}
     </div>
 
 </div>

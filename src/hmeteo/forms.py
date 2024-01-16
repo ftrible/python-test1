@@ -15,7 +15,9 @@ class HObjForm(forms.ModelForm):
         # Get latitude and longitude from OpenCageGeocode API
         location_name = self.cleaned_data['location']
         OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
-        results = OCG.geocode(u'Cannes')
+        results = OCG.geocode(location_name)
+#        print(results[0])
+        print(results[0]['components']['country'])
         if results and results[0].get('geometry'):
             instance.lat = results[0]['geometry']['lat']
             instance.lng = results[0]['geometry']['lng']
@@ -35,4 +37,4 @@ class HObjForm(forms.ModelForm):
             raise forms.ValidationError("This location already exists")
         return location
     
- 
+
