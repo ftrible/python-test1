@@ -2,10 +2,11 @@
     <div class="card-header">{{item.location}}</div>
     <div class="card-body {% if not item.publish_date %} text-muted {% endif %}">
         {% if item.image %}
-        <img id="bcki{{item.slug|cut:"-"}}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+        <img id="bcki{{item.slug|cut:" -"}}" src="{{ item.image.url }}"
+            class="w-50 card-img-overlay img-thumbnail img-fluid" />
         {% endif%}
         <h5 class="card-title">Temperatures</h5>
-        <canvas id="tc{{item.slug|cut:"-"}}" class="card-body"></canvas>
+        <canvas id="tc{{item.slug|cut:" -"}}" class="card-body"></canvas>
         <script type="text/javascript">
             var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug}}').getContext('2d');
             var dates{{item.slug|cut:"-"}} = {{ item.get_historical_temperature.dates| safe }};
@@ -37,6 +38,7 @@
                     ]
                 },
                 options: {
+                    responsive: true,
                     scales: {
                         x: [{
                             type: 'time',
@@ -47,11 +49,10 @@
                                 }
                             }
                         }],
-                        y: [{
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }]
+                        y: {
+                            min: -10,
+                            max: 30,
+                        }
                     }
                 },
                 {% if item.image %}
