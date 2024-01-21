@@ -11,6 +11,7 @@ import pandas as pd
 import json
 # Create your models here.
 User = settings.AUTH_USER_MODEL
+# https://open-meteo.com/en/docs/historical-weather-api/
     
 class HTheItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='hmeteo')
@@ -46,7 +47,7 @@ class HTheItem(models.Model):
             "longitude": self.lng,
             "start_date": formatted_start_date,
             "end_date":formatted_end_date,
-	        "daily": ["temperature_2m_max", "temperature_2m_min"],
+	        "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
 	        "timezone": "auto"
         }
 #        print(params)
@@ -55,21 +56,25 @@ class HTheItem(models.Model):
             response = responses[0]
             # Process daily data. The order of variables needs to be the same as requested.
             daily = response.Daily()
-            daily_temperature_max = daily.Variables(0).ValuesAsNumpy()
-            daily_temperature_min = daily.Variables(1).ValuesAsNumpy()
+            daily_tmax = daily.Variables(0).ValuesAsNumpy()
+            daily_tmin = daily.Variables(1).ValuesAsNumpy()
+            daily_rain = daily.Variables(2).ValuesAsNumpy()
             daily_data = {"date": pd.date_range(
                 start = pd.to_datetime(daily.Time(), unit = "s"),
                 end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
                 freq = pd.Timedelta(seconds = daily.Interval()),
                 inclusive = "left"
             )}
-            daily_data["tmax"] = daily_temperature_max
-            daily_data["tmin"] = daily_temperature_min
+            daily_data["tmax"] = daily_tmax
+            daily_data["tmin"] = daily_tmin
+            daily_data["rain"] = daily_rain
             daily_dataframe = pd.DataFrame(data = daily_data)
+            daily_dataframe.fillna(0)
             dates = [date.strftime("%Y-%m-%d") for date in daily_dataframe["date"]]
             tmax = daily_dataframe["tmax"].tolist()
             tmin = daily_dataframe["tmin"].tolist()
-            return {'dates': dates, 'tmax': tmax,'tmin': tmin}
+            rain = daily_dataframe["rain"].tolist()
+            return {'dates': dates, 'tmax': tmax,'tmin': tmin,'rain': rain}
 #            daily_data = []
 #            for date, tmax,tmin in zip(daily_dataframe["date"], daily_dataframe["tmax"], daily_dataframe["tmin"]):
 #                daily_data.append({"date": date, "tmax": tmax, "tmin": tmin})

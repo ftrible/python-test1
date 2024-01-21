@@ -8,21 +8,27 @@
         <h5 class="card-title">Temperatures</h5>
         <canvas id="tc{{item.slug|cut:'-'}}" class="card-body"></canvas>
         <script type="text/javascript">
-            var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug}}').getContext('2d');
-            var dates{{item.slug|cut:"-"}} = {{ item.get_historical_temperature.dates| safe }};
-            var tmax{{item.slug|cut:"-"}} = {{ item.get_historical_temperature.tmax| safe }};
-            var tmin{{item.slug|cut:"-"}} = {{ item.get_historical_temperature.tmin| safe }};
-            {% if item.image %}
+            var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug|cut:"-"}}').getContext('2d');
+var nan = 0;
+var historicalData{{item.slug|cut:"-"}} = {{ item.get_historical_temperature|safe }};
+var dates{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.dates;
+var tmax{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.tmax;
+var tmin{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.tmin;
+var rain{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.rain;
+
+           {% if item.image %}
             var bi{{item.slug|cut:"-"}} = document.getElementById('bcki{{item.slug|cut:"-"}}')
             bi{{item.slug|cut:"-"}}.hidden=true;
             {% endif %}
             var myChart = new Chart(ctx{{item.slug|cut:"-"}}, {
-                type: 'bar',
                 data: {
                     labels: dates{{item.slug|cut:"-"}},
+                    type: 'bar',
                     datasets: [
                         {
                             label: 'Temperature Max',
+                            type: 'bar',
+                            yAxisID: 'temperature', // Use the 'temperature' axis
                             data: tmax{{item.slug|cut:"-"}},
                             backgroundColor: 'rgba(255,0,0, 1)',
                             borderWidth: 1,
@@ -30,28 +36,44 @@
                         },
                         {
                             label: 'Temperature Min',
+                            type: 'bar',
+                            yAxisID: 'temperature', // Use the 'temperature' axis
                             data: tmin{{item.slug|cut:"-"}},
                             backgroundColor: 'rgba(0,0,255, 1)',
                             borderWidth: 1,
                             fill: false,
-                        }
+                        },
+                        {
+                            label: 'Rain',
+                            type: 'line',
+                           yAxisID: 'rainfall', // Use the 'rainfall' axis
+                            data: rain{{item.slug|cut:"-"}},
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            borderWidth: 2,
+                            pointRadius: 5,
+                        },
                     ]
                 },
                 options: {
                     responsive: true,
                     scales: {
-                        x: [{
-                            type: 'time',
-                            time: {
-                                unit: 'day',
-                                displayFormats: {
-                                    day: 'dddd, MMMM D'
-                                }
-                            }
-                        }],
-                        y: {
+                        temperature: {
+                            position: 'left',
                             min: -10,
                             max: 30,
+                        },
+                        rain: {
+                            position: 'right',
+                            min: -10,
+                            max: 30,
+                            ticks: {
+                                beginAtZero: true,
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Rainfall (mm)',
+                            },
                         }
                     }
                 },
@@ -61,7 +83,7 @@
                         var ctx = chart.ctx;
                         var width = chart.width;
                         var height = chart.height;
-                        ctx.globalAlpha = 0.5;
+                        ctx.globalAlpha = 0.3;
                         ctx.globalCompositeOperation = 'destination-over';
                         ctx.drawImage(bi{{item.slug|cut:"-"}}, 0, 0, width, height);
                         ctx.globalCompositeOperation = 'source-over';

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+
+
 {% block content %}
-<H1>{{title}}</H1>
+<a href="/hmeteo-new" class="card-link btn btn-primary">Add Location</a>
 <div class="row">
 {% for obj in object_list %}
 <div class='col-12 col-md-4 mx-auto'>
@@ -8,5 +10,4 @@
 </div>
 {% endfor %}
 </div>
-<a href="/hmeteo-new" class="card-link btn btn-primary">Add Location</a>
 {% endblock %}
