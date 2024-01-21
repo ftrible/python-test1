@@ -1,57 +1,78 @@
 <div class="card">
-    <div class="card-header">{{item.location}}</div>
-    <div class="card-body {% if not item.publish_date %} text-muted {% endif %}">
-        {% if item.image %}
-        <img id="bcki{{item.slug|cut:'-'}}" src="{{ item.image.url }}"
-            class="w-50 card-img-overlay img-thumbnail img-fluid" />
-        {% endif%}
-        <h5 class="card-title">Temperatures</h5>
-        <canvas id="tc{{item.slug|cut:'-'}}" class="card-body"></canvas>
-        <script type="text/javascript">
+  <div class="card-header">{{ item.location }}</div>
+  <div class="card-body {% if not item.publish_date %}{% endif %}">
+    {% if item.image %}
+      <img id="bcki{{ item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+    {% endif %}
+    {% if detail %}
+    <h5 class="card-title">Weather History</h5>
+    {% else %}
+    <h5 class="card-title">Weather Forecast</h5>
+   {% endif %}
+    <canvas id="tc{{ item.slug|cut:'-' }}" class="card-body"></canvas>
+    <script type="text/javascript">
             var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug|cut:"-"}}').getContext('2d');
-var nan = 0;
-var historicalData{{item.slug|cut:"-"}} = {{ item.get_historical_temperature|safe }};
-var dates{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.dates;
-var tmax{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.tmax;
-var tmin{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.tmin;
-var rain{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.rain;
+           {% if detail %}
+            var data{{item.slug|cut:"-"}} = {{ item.get_historical_temperature|safe }};
+           {% else %}
+            var data{{item.slug|cut:"-"}} = {{ item.get_forecast_temperature|safe }};
+           {% endif %}
+            var dates{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.dates;
+            var tmax{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmax;
+            var tmin{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmin;
+            var rain{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.rain;
 
            {% if item.image %}
             var bi{{item.slug|cut:"-"}} = document.getElementById('bcki{{item.slug|cut:"-"}}')
             bi{{item.slug|cut:"-"}}.hidden=true;
             {% endif %}
+            var gradient;
             var myChart = new Chart(ctx{{item.slug|cut:"-"}}, {
                 data: {
                     labels: dates{{item.slug|cut:"-"}},
                     type: 'bar',
                     datasets: [
                         {
-                            label: 'Temperature Max',
+                            label: 'Temperatures',
                             type: 'bar',
                             yAxisID: 'temperature', // Use the 'temperature' axis
-                            data: tmax{{item.slug|cut:"-"}},
-                            backgroundColor: 'rgba(255,0,0, 1)',
+                            data: tmax{{item.slug|cut:"-"}}.map((value, index) => {
+                                return [ tmin{{item.slug|cut:"-"}}[index], value ];
+                            }),
+                            backgroundColor: function(context) {
+                                const chart = context.chart;
+                                const {ctx, chartArea} = chart;
+
+                                if (!chartArea) {
+                                // This case happens on initial chart load
+                                return;
+                                }
+                                const chartWidth = chartArea.right - chartArea.left;
+                                const chartHeight = chartArea.bottom - chartArea.top;
+                                if (!gradient || width !== chartWidth || height !== chartHeight) {
+                                    // Create the gradient because this is either the first render
+                                    // or the size of the chart has changed
+                                    width = chartWidth;
+                                    height = chartHeight;
+                                    gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                                    gradient.addColorStop(0, 'blue');
+                                    gradient.addColorStop(1, 'red');
+                                }
+                                return gradient;
+                            },
                             borderWidth: 1,
-                            fill: false,
-                        },
-                        {
-                            label: 'Temperature Min',
-                            type: 'bar',
-                            yAxisID: 'temperature', // Use the 'temperature' axis
-                            data: tmin{{item.slug|cut:"-"}},
-                            backgroundColor: 'rgba(0,0,255, 1)',
-                            borderWidth: 1,
-                            fill: false,
                         },
                         {
                             label: 'Rain',
                             type: 'line',
-                           yAxisID: 'rainfall', // Use the 'rainfall' axis
+                            yAxisID: 'rainfall', // Use the 'rainfall' axis
                             data: rain{{item.slug|cut:"-"}},
-                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
-                            borderColor: 'rgba(0, 255, 0, 1)',
+                            backgroundColor: 'rgba(0, 0, 255, 0.5)',
+                            borderColor: 'rgba(0, 0, 255, 1)',
                             borderWidth: 2,
                             pointRadius: 5,
+                            fill: {value: 0},
+                            tension: 0.4
                         },
                     ]
                 },
@@ -60,24 +81,14 @@ var rain{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.rain;
                     scales: {
                         temperature: {
                             position: 'left',
-                            min: -10,
-                            max: 30,
+                            min: -5,
+                            max: 15,
                         },
                         rain: {
                             position: 'right',
-                            min: -10,
-                            max: 30,
-                            ticks: {
-                                beginAtZero: true,
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Rainfall (mm)',
-                            },
                         }
                     }
                 },
-                {% if item.image %}
                 plugins: [{
                     beforeDraw: function(chart) {
                         var ctx = chart.ctx;
@@ -85,22 +96,27 @@ var rain{{item.slug|cut:"-"}} = historicalData{{item.slug|cut:"-"}}.rain;
                         var height = chart.height;
                         ctx.globalAlpha = 0.3;
                         ctx.globalCompositeOperation = 'destination-over';
-                        ctx.drawImage(bi{{item.slug|cut:"-"}}, 0, 0, width, height);
+                        {% if item.image %}
+                            ctx.drawImage(bi{{item.slug|cut:"-"}}, 0, 0, width, height);
+                        {% else %}
+                            ctx.fillStyle = "rgba(100, 150, 220, 1)";
+                            ctx.fillRect(0, 0, width, height);
+                        {% endif %}
                         ctx.globalCompositeOperation = 'source-over';
                         ctx.globalAlpha = 1;
                     }
                 }]
-                {% endif %}
+
             });
         </script>
-        {% if nobuttons%}
-        {% else %}
-        <a href="{{item.get_absolute_url}}" class="card-link btn btn-primary">View</a>
-        {% if request.user == item.user%}
-        <a href="{{item.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
-        <a href="{{item.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
-        {% endif %}
-        {% endif %}
-    </div>
+    {% if nobuttons %}
 
+    {% else %}
+      <a href="{{ item.get_absolute_url }}" class="card-link btn btn-primary">View History</a>
+      {% if request.user == item.user %}
+        <a href="{{ item.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
+        <a href="{{ item.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
+      {% endif %}
+    {% endif %}
+  </div>
 </div>

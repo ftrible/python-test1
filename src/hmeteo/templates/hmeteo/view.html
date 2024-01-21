@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% include 'hmeteo/list_inline.html' with item=item nobuttons=True %}
+{% include 'hmeteo/list_inline.html' with item=item nobuttons=True detail=True%}
 {% if request.user.is_authenticated%}
 {% if request.user == item.user%}
 <div class="col-12">
