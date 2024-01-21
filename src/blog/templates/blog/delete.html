@@ -2,7 +2,7 @@
 {% block content %}
 <H1> Are you sure you want to delete this post: </H1>
 <div class='col-12 col-md-4 mx-auto'>
-{% include 'list_inline.html' with item=post detail=False %}
+{% include 'blog/list_inline.html' with item=post detail=True %}
 </div>
 <form method="POST"> {% csrf_token %}
     <button class ="btn btn-danger">Yes, Delete</button>

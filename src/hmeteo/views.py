@@ -26,10 +26,7 @@ def create(request):
 
 def list(request):
 #    now=timezone.now()
-    if (request.user.is_staff):
-        queryset=HTheItem.objects.all()
-    else:
-        queryset=HTheItem.objects.all().published()
+    queryset=HTheItem.objects.all()
     template='hmeteo/list.html'
     context ={"title":'All Locations', "object_list": queryset}
     return render(request,template, context)
