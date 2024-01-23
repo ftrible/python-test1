@@ -12,7 +12,20 @@ import json
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 # https://open-meteo.com/en/docs/historical-weather-api/
-    
+class HTheQuerySet(models.QuerySet):
+     def search(self, query):
+        lookup=(Q(location__icontains=query))
+        return self.filter(lookup)
+        
+class HTheManager(models.Manager):
+    def get_queryset(self):
+        return HTheQuerySet(self.model, using=self._db)
+    def search(self, query=None):
+        if  query is None:
+            return self.get_queryset().none()
+        return self.get_queryset().search(query)
+
+
 class HTheItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='hmeteo')
     image = models.ImageField(upload_to="image/", blank=True, null=True)
@@ -20,6 +33,7 @@ class HTheItem(models.Model):
     lat=models.FloatField(null=True, verbose_name='Latitude')
     lng=models.FloatField(null=True, verbose_name='Longitude')
     slug = models.SlugField(unique=True)
+    objects=HTheManager()
  
     class Meta:
         ordering=['-location']

@@ -3,6 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from .models import SearchQuery
 from blog.models import TheItem
+from hmeteo.models import HTheItem
 
 def search_view(request):
     query=request.GET.get('q', None)
@@ -14,5 +15,7 @@ def search_view(request):
         SearchQuery.objects.create(user=user, query=query)
         blog_list=TheItem.objects.search(query=query)
         context['blog_list']= blog_list
+        meteo_list=HTheItem.objects.search(query=query)
+        context['meteo_list']= meteo_list
     template='searches/view.html'
     return render(request, template,context)

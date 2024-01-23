@@ -21,7 +21,6 @@
             var tmax{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmax;
             var tmin{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmin;
             var rain{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.rain;
-
            {% if item.image %}
             var bi{{item.slug|cut:"-"}} = document.getElementById('bcki{{item.slug|cut:"-"}}')
             bi{{item.slug|cut:"-"}}.hidden=true;

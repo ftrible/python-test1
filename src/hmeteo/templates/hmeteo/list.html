@@ -1,9 +1,31 @@
 {% extends "base.html" %}
-
-
+    {% block title %}
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+   {% endblock %}
 {% block content %}
 <a href="/hmeteo-new" class="card-link btn btn-primary">Add Location</a>
 <div class="row">
+<div class="card col-12 col-md-4 mx-auto">
+  <div class="card-header">World</div>
+    <div class="card-body" id="map" style="height: 280px;"></div>
+</div>
+<script>
+  // Initialize the map
+  var map = L.map('map').setView([0, 0], 1); // Centered on (0, 0) with zoom level 1
+
+  // Add a tile layer from OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Loop through your objects and add markers
+  {% for obj in object_list %}
+    var marker = L.marker([{{ obj.lat }}, {{ obj.lng }}]).addTo(map);
+    marker.bindPopup("{{ obj.location }}"); // Adjust the popup content as needed
+  {% endfor %}
+</script>
 {% for obj in object_list %}
 <div class='col-12 col-md-4 mx-auto'>
 {% include 'hmeteo/list_inline.html' with item=obj detail=False %}
