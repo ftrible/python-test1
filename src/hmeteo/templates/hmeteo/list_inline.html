@@ -13,9 +13,9 @@
     <script type="text/javascript">
             var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug|cut:"-"}}').getContext('2d');
            {% if detail %}
-            var data{{item.slug|cut:"-"}} = {{ item.get_historical_temperature|safe }};
+            var data{{item.slug|cut:"-"}} = {{ item.get_historical_temperature |safe }};
            {% else %}
-            var data{{item.slug|cut:"-"}} = {{ item.get_forecast_temperature|safe }};
+            var data{{item.slug|cut:"-"}} = {{ item.get_forecast_temperature |safe }};
            {% endif %}
             var dates{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.dates;
             var tmax{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmax;

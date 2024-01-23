@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path,reverse_lazy
 from .views import contact_page,login_view, about_page,forgot_password
 from django.contrib.auth import views as auth_views
-
+from userprofile.views import update
 urlpatterns = [
     path("", include("blog.urls")),
     path("", include("hmeteo.urls")),
@@ -29,5 +29,6 @@ urlpatterns = [
     path('password_reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(template_name='simple.html', success_url=reverse_lazy('password_reset_complete')),name='password_reset_confirm'),
     path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(template_name='reset_password_success.html'), name='password_reset_complete'),
     path('about/', about_page, name='about'),
+    path('userprofile/', update, name='userprofile'),
     path('admin/', admin.site.urls),
 ]

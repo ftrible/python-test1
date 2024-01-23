@@ -7,7 +7,14 @@
     {% for post in object_list %}
     <div class='col-12 col-md-4 mx-auto'>
     {% include 'blog/list_inline.html' with item=post detail=False %}
-</div>
+    </div>
+    {% endfor %}
+    </div>
+    <div class="row">
+    {% for meteo in meteo_list %}
+    <div class='col-12 col-md-4 mx-auto'>
+    {% include 'hmeteo/list_inline.html' with item=meteo detail=False %}
+    </div>
     {% endfor %}
     </div>
 {% endblock %}

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from requests_cache import CachedSession
 import pandas as pd
 import json
+from userprofile.models import UserProfile
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 # https://open-meteo.com/en/docs/historical-weather-api/
@@ -51,7 +52,10 @@ class HTheItem(models.Model):
         # Get the current date
         current_date = datetime.now()
         # Calculate the start date by subtracting 10 days from the current date
-        start_date = current_date - timedelta(days=10)
+        if not hasattr(self.user, 'userprofile'):
+            UserProfile.objects.create(user=self.user)
+        user_profile = self.user.userprofile
+        start_date = current_date - timedelta(days=user_profile.daysBackwards)
         end_date = current_date - timedelta(days=1)
         # Format the dates as strings in the required format ("%Y-%m-%d")
         formatted_start_date = start_date.strftime("%Y-%m-%d")
@@ -108,11 +112,14 @@ class HTheItem(models.Model):
             url = "https://api.open-meteo.com/v1/forecast"
 
             # Construct the parameters using self.lat and self.lng
+            if not hasattr(self.user, 'userprofile'):
+                UserProfile.objects.create(user=self.user)
+            user_profile = self.user.userprofile
             params = {
                 "latitude": self.lat,
                 "longitude": self.lng,
                 "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
-                "forecast_days": 7
+                "forecast_days": user_profile.daysForward
             }
 
             # Make the API request

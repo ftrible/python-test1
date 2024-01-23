@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light border">
-  <a class="navbar-brand" href="/">Last Posts</a>
+  <a class="navbar-brand" href="/">Home</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -24,15 +24,13 @@
         <a class="nav-link" href='/admin/'>Admin</a>
       </li>
       {% endif %}
-    </ul>
+       </ul>
     {% if user.is_authenticated %}
     <form class="form-inline my-2 my-lg-0" action="/search/">
-      <!--       <input class="form-control mr-sm-2" type="search" placeholder="Search" name='q' aria-label="Search">
-  -->
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
     </form>
   </div>
-  <div class="navbar-text"><i class="bi bi-person"></i>{{user.username}}</div>
+  <a class="nav-link ml-auto me-3" href='/userprofile'><i class="bi bi-person"></i>{{user.username}}  </a>
   {% else %}
   <div class="navbar-text"><a href='/login/'><i class="bi bi-person"></i>Login</a></div>
   {% endif%}
