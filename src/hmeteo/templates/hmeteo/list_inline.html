@@ -2,16 +2,16 @@
   <div class="card-header">{{ item.location }}</div>
   <div class="card-body {% if not item.publish_date %}{% endif %}">
     {% if item.image %}
-      <img id="bcki{{ item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+      <img id="bcki{{item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
     {% endif %}
     {% if detail %}
     <h5 class="card-title">Weather History</h5>
     {% else %}
     <h5 class="card-title">Weather Forecast</h5>
    {% endif %}
-    <canvas id="tc{{ item.slug|cut:'-' }}" class="card-body"></canvas>
+    <canvas id="tc{{item.slug|cut:'-' }}" class="card-body"></canvas>
     <script type="text/javascript">
-            var ctx{{item.slug|cut:"-"}} = document.getElementById('tc{{item.slug|cut:"-"}}').getContext('2d');
+            var ctx{{item.slug|cut:"-"}} = document.getElementById("tc{{item.slug|cut:'-'}}").getContext('2d');
            {% if detail %}
             var data{{item.slug|cut:"-"}} = {{ item.get_historical_temperature |safe }};
            {% else %}
@@ -22,7 +22,7 @@
             var tmin{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmin;
             var rain{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.rain;
            {% if item.image %}
-            var bi{{item.slug|cut:"-"}} = document.getElementById('bcki{{item.slug|cut:"-"}}')
+            var bi{{item.slug|cut:"-"}} = document.getElementById("bcki{{item.slug|cut:'-'}}")
             bi{{item.slug|cut:"-"}}.hidden=true;
             {% endif %}
             var gradient;
@@ -43,7 +43,6 @@
                                 const {ctx, chartArea} = chart;
 
                                 if (!chartArea) {
-                                // This case happens on initial chart load
                                 return;
                                 }
                                 const chartWidth = chartArea.right - chartArea.left;
