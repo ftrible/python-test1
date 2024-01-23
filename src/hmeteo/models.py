@@ -44,119 +44,69 @@ class HTheItem(models.Model):
         return f"{self.get_absolute_url()}/edit"
     def get_delete_url(self):
         return f"{self.get_absolute_url()}/delete"
-    def get_historical_temperature(self): #,start_date, end_date):
-        cache_session = CachedSession('.cache', expire_after = -1)
-        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-        openmeteo = Client(session = retry_session)
+    def fetch_weather_data(self, url, params):
+        cache_session = CachedSession('.cache', expire_after=-1)
+        retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+        openmeteo = Client(session=retry_session)
+
+        try:
+            responses = openmeteo.weather_api(url, params=params)
+            response = responses[0].Daily()
+            data = {
+                "date": pd.date_range(
+                    start=pd.to_datetime(response.Time(), unit="s"),
+                    end=pd.to_datetime(response.TimeEnd(), unit="s"),
+                    freq=pd.Timedelta(seconds=response.Interval()),
+                    inclusive="left"
+                ),
+                "tmax": response.Variables(0).ValuesAsNumpy(),
+                "tmin": response.Variables(1).ValuesAsNumpy(),
+                "rain": response.Variables(2).ValuesAsNumpy()
+            }
+
+            dataframe = pd.DataFrame(data=data)
+            dataframe.fillna(0, inplace=True)
+            dataframe["date"] = dataframe["date"].dt.strftime("%Y-%m-%d")
+
+            return {
+                'dates': dataframe["date"].tolist(),
+                'tmax': dataframe["tmax"].tolist(),
+                'tmin': dataframe["tmin"].tolist(),
+                'rain': dataframe["rain"].tolist()
+            }
+        except Exception as e:
+            print(f"Error fetching weather data: {e}")
+            return None
+
+    def get_historical_temperature(self):
         url = "https://archive-api.open-meteo.com/v1/archive"
-        # Get the current date
         current_date = datetime.now()
-        # Calculate the start date by subtracting 10 days from the current date
         if not hasattr(self.user, 'userprofile'):
             UserProfile.objects.create(user=self.user)
         user_profile = self.user.userprofile
         start_date = current_date - timedelta(days=user_profile.daysBackwards)
         end_date = current_date - timedelta(days=1)
-        # Format the dates as strings in the required format ("%Y-%m-%d")
         formatted_start_date = start_date.strftime("%Y-%m-%d")
         formatted_end_date = end_date.strftime("%Y-%m-%d")
         params = {
             "latitude": self.lat,
             "longitude": self.lng,
             "start_date": formatted_start_date,
-            "end_date":formatted_end_date,
-	        "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
-	        "timezone": "auto"
+            "end_date": formatted_end_date,
+            "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
+            "timezone": "auto"
         }
-        try:
-            responses = openmeteo.weather_api(url, params=params)
-            response = responses[0]
-            # Process daily data. The order of variables needs to be the same as requested.
-            daily = response.Daily()
-            daily_data = {
-                "date": pd.date_range(
-                    start = pd.to_datetime(daily.Time(), unit = "s"),
-                    end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
-                    freq = pd.Timedelta(seconds = daily.Interval()),
-                    inclusive = "left"
-                ),
-                "tmax": daily.Variables(0).ValuesAsNumpy(),
-                "tmin": daily.Variables(1).ValuesAsNumpy(),
-                "rain": daily.Variables(2).ValuesAsNumpy()
-            }
-            # Create a DataFrame from the extracted data
-            daily_dataframe = pd.DataFrame(data=daily_data)
+        return self.fetch_weather_data(url, params)
 
-            # Fill NaN values with 0
-            daily_dataframe.fillna(0, inplace=True)
-
-            # Convert date column to string in the desired format
-            daily_dataframe["date"] = daily_dataframe["date"].dt.strftime("%Y-%m-%d")
-
-            # Extract lists from DataFrame
-            dates = daily_dataframe["date"].tolist()
-            tmax = daily_dataframe["tmax"].tolist()
-            tmin = daily_dataframe["tmin"].tolist()
-            rain = daily_dataframe["rain"].tolist()
-
-            return {'dates': dates, 'tmax': tmax,'tmin': tmin,'rain': rain}
-        except Exception as e:
-            # Handle the exception (e.g., log the error, display a message)
-            print(f"Error fetching historical temperature data: {e}")
-            return None
     def get_forecast_temperature(self):
-        try:
-            cache_session = CachedSession('.cache', expire_after=3600)
-            retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
-            openmeteo = Client(session=retry_session)
-            url = "https://api.open-meteo.com/v1/forecast"
-
-            # Construct the parameters using self.lat and self.lng
-            if not hasattr(self.user, 'userprofile'):
-                UserProfile.objects.create(user=self.user)
-            user_profile = self.user.userprofile
-            params = {
-                "latitude": self.lat,
-                "longitude": self.lng,
-                "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
-                "forecast_days": user_profile.daysForward
-            }
-
-            # Make the API request
-            responses = openmeteo.weather_api(url, params=params)
-            response = responses[0]
-
-            # Process forecast data
-            forecast = response.Daily()
-            forecast_data = {
-                "date": pd.date_range(
-                    start=pd.to_datetime(forecast.Time(), unit="s"),
-                    end = pd.to_datetime(forecast.TimeEnd(), unit = "s"),
-                    freq=pd.Timedelta(seconds=forecast.Interval()),
-                    inclusive="left"
-                ),
-                "tmax": forecast.Variables(0).ValuesAsNumpy(),
-                "tmin": forecast.Variables(1).ValuesAsNumpy(),
-                "rain": forecast.Variables(2).ValuesAsNumpy()
-            }
-
-            # Create a DataFrame from the extracted data
-            forecast_dataframe = pd.DataFrame(data=forecast_data)
-
-            # Fill NaN values with 0
-            forecast_dataframe.fillna(0, inplace=True)
-
-            # Convert date column to string in the desired format
-            forecast_dataframe["date"] = forecast_dataframe["date"].dt.strftime("%Y-%m-%d")
-
-            # Extract lists from DataFrame
-            dates = forecast_dataframe["date"].tolist()
-            tmax = forecast_dataframe["tmax"].tolist()
-            tmin = forecast_dataframe["tmin"].tolist()
-            rain = forecast_dataframe["rain"].tolist()
-
-            return {'dates': dates, 'tmax': tmax, 'tmin': tmin,'rain': rain}
-        except Exception as e:
-            # Handle the exception (e.g., log the error, display a message)
-            print(f"Error fetching forecast temperature data: {e}")
-            return None
+        url = "https://api.open-meteo.com/v1/forecast"
+        if not hasattr(self.user, 'userprofile'):
+            UserProfile.objects.create(user=self.user)
+        user_profile = self.user.userprofile
+        params = {
+            "latitude": self.lat,
+            "longitude": self.lng,
+            "daily": ["temperature_2m_max", "temperature_2m_min", "rain_sum"],
+            "forecast_days": user_profile.daysForward
+        }
+        return self.fetch_weather_data(url, params)
