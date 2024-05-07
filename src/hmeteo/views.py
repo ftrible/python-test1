@@ -3,6 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from hmeteo.models import HTheItem
 from hmeteo.forms import HObjForm
+from django.http import JsonResponse
+# https://opencagedata.com/dashboard#geocoding
+# See full Python tutorial:
+# https://opencagedata.com/tutorials/geocode-in-python
+from opencage.geocoder import OpenCageGeocode
+import json
 
 # CRUD
 # GET : retrieve, list
@@ -23,6 +29,18 @@ def create(request):
     context ={"title":'Location Create', "form": form}
     return render(request,template, context)
 
+def geocode(request):
+    print("********* Geocode ************")
+    json_data=request.body.decode('utf-8')
+    print( json_data)
+    data_dict = json.loads(json_data)
+    location_name = data_dict.get('location_name')
+    print(location_name)
+    OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
+    results = OCG.geocode(location_name)
+    for town in results:
+        print(town['components']['country'])
+    return JsonResponse(results, safe=False)
 
 def list(request):
 #    now=timezone.now()

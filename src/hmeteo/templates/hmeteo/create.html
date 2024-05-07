@@ -1,8 +1,105 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<form method="POST" action="hmeteo-new" enctype="multipart/form-data"> {% csrf_token %}
+  <form method="POST" action="hmeteo-new" enctype="multipart/form-data" id="geocodingForm">
+    {% csrf_token %}
     {{ form.as_p }}
-    <button class ="btn" type="Submit">OK</button>
-    <button class ="btn" type="Cancel">Cancel</button>
-</form>
+    <button class="btn" type="Submit" id="submit">OK</button>
+    <button class="btn" type="Cancel">Cancel</button>
+  </form>
+  <!-- Modal -->
+  <div class="modal fade" id="selectLocationModal" tabindex="-1" role="dialog" aria-labelledby="selectLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="selectLocationModalLabel">Select Location</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <ul id="locationList" class="list-group">
+            <!-- Populate this list dynamically with the location options -->
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <!-- Add any other buttons you need -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    document.getElementById('geocodingForm').addEventListener('submit', async function (event) {
+      event.preventDefault()
+      const locationName = document.getElementById('id_location').value
+      // Send AJAX request to Django view
+      const response = await fetch('/hmeteo/geocode/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ location_name: locationName })
+      })
+    
+      const data = await response.json()
+    
+      // Process geocoding results
+      const results = data
+      if (results.length > 1) {
+        // Show dialog to select location
+        // Populate the modal dialog with location options
+        const locationList = document.getElementById('locationList')
+        locationList.innerHTML = '' // Clear previous options
+    
+        results.forEach((result, index) => {
+          const listItem = document.createElement('li')
+          listItem.classList.add('list-group-item')
+          listItem.data2 = result
+          listItem.textContent = result.components.country + '(' + result.components.state + ') ' + result.components._type
+          listItem.addEventListener('click', () => {
+            // Handle selection of location
+            console.log('Selected location:', result)
+
+                      // Proceed with the single result
+                      fetch('/hmeteo/create/', {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                      },
+                      body: JSON.stringify({ location_geo: location })
+                      });
+
+            $('#selectLocationModal').modal('hide') // Close the modal dialog
+          })
+          locationList.appendChild(listItem)
+        })
+    
+        // Show the modal dialog
+        jQuery('#selectLocationModal').modal('show')
+        // Add event listener to location list items
+        $('#locationList').on('click', 'li', function () {
+          // Get the selected location from the data attribute
+          const location = this.data2
+          // Do something with the selected location
+          console.log('Selected location:', location)
+          // Close the modal if necessary
+          $('#selectLocationModal').modal('hide')
+        })
+        return
+      } else if (results.length < 1) {
+        alert('Not found')
+        return
+      }
+      const location2 = results[0].geometry
+      // Proceed with the single result
+      const response2 = await fetch('/hmeteo/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ location_geo: location2 })
+      })
+    })
+  </script>
 {% endblock %}

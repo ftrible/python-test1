@@ -4,6 +4,7 @@ from searches.views import search_view
 from django.conf import settings
 urlpatterns = [
     path('hmeteo/', views.list, name='list'),
+    path('hmeteo/geocode/', views.geocode, name='geocode'),
 #    path('search/', search_view, name='search'),
     path('hmeteo/<str:slug_id>/', views.detail, name='detail'),
     path('hmeteo/<str:slug_id>/delete/', views.delete, name='delete'),

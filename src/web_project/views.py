@@ -12,8 +12,12 @@ def about_page(request):
     return render(request,template, context)
 
 from django.shortcuts import render, redirect                                
-from django.contrib.auth import authenticate, login                                                                          
-                                                                                
+from django.contrib.auth import authenticate, login , logout                                                                         
+
+def logout_view(request):     
+    logout(request)
+    # Redirect to a specific URL after logout
+    return redirect('home')  # Replace 'home' with the URL name of your choice
 def login_view(request):                                                     
     if request.method == 'POST':                                    
         form = AuthenticationForm(data=request.POST)   

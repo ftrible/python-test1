@@ -16,17 +16,33 @@ class HObjForm(forms.ModelForm):
         location_name = self.cleaned_data['location']
         OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
         results = OCG.geocode(location_name)
-#        print(results[0])
-        print(results[0]['components']['country'])
-        if results and results[0].get('geometry'):
-            instance.lat = results[0]['geometry']['lat']
-            instance.lng = results[0]['geometry']['lng']
+#        print(len(results))
+#        for town in results:
+#            print(town['components']['country'])
+#            print(town['components']['state'])
+        if len(results) > 1:
+            # Show a dialog to select the desired location
+            print("More than 1 " + str(len(results)))
+            pass
+        elif len(results) == 1:
+            result = results[0]
+            instance.lat = result['geometry']['lat']
+            instance.lng = result['geometry']['lng']
+            instance.slug = self.generate_unique_slug(location_name)
         else:
             raise ValidationError("Geocoding failed for the provided location.")
-        instance.slug=slugify(self.cleaned_data['location'])
         if commit:
             instance.save()
         return instance
+    def generate_unique_slug(self, location_name):
+        slug_base = slugify(location_name)
+        slug = slug_base
+        count = 1
+        while HTheItem.objects.filter(slug=slug).exists():
+            slug = f"{slug_base}_{count}"
+            count += 1
+            print(slug)
+        return slug
     def clean_title(self, *args, **kwargs):
         location=self.cleaned_data.get('location')
         instance=self.instance
@@ -36,5 +52,3 @@ class HObjForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("This location already exists")
         return location
-    
-

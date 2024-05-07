@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+<H1>User {{request.user}}</H1>
+<H2>Request Parameters</H2>
 <form method="POST" action="." enctype='multipart/form-data'> {% csrf_token %}
     {{ form.as_p }}
     <button class="btn btn-primary" type="Submit">Change</button>
 </form>
+<!-- Button for logout -->
+<H2>Disconnect</H2>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Logout</button>
+</form>
+
 {% endblock %}
 

@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path,reverse_lazy
-from .views import contact_page,login_view, about_page,forgot_password
+from .views import contact_page,login_view, logout_view, about_page,forgot_password
 from django.contrib.auth import views as auth_views
 from userprofile.views import update
 urlpatterns = [
@@ -31,4 +31,5 @@ urlpatterns = [
     path('about/', about_page, name='about'),
     path('userprofile/', update, name='userprofile'),
     path('admin/', admin.site.urls),
+    path('logout/',logout_view, name='logout')
 ]

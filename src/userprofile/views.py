@@ -20,5 +20,5 @@ def update(request):
         form.save()
         return redirect("/userprofile")
     context ={"title": f'Update {request.user}', "form": form}
-    template="hmeteo/update.html"
+    template="userprofile/update.html"
     return render(request,template, context)
