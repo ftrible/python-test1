@@ -4,7 +4,7 @@
     {% csrf_token %}
     {{ form.as_p }}
     <button class="btn" type="Submit" id="submit">OK</button>
-    <button class="btn" type="Cancel">Cancel</button>
+    <button class="btn" type="Cancel" id="cancel">Cancel</button>
   </form>
   <!-- Modal -->
   <div class="modal fade" id="selectLocationModal" tabindex="-1" role="dialog" aria-labelledby="selectLocationModalLabel" aria-hidden="true">
@@ -12,7 +12,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="selectLocationModalLabel">Select Location</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close1"><span aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
           <ul id="locationList" class="list-group">
@@ -20,13 +20,27 @@
           </ul>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close2">Close</button>
           <!-- Add any other buttons you need -->
         </div>
       </div>
     </div>
   </div>
   <script type="text/javascript">
+    $('#close1').on('click', function() {
+      // Hide the modal using jQuery's modal method
+      $('#selectLocationModal').modal('hide');
+    });
+    $('#close2').on('click', function() {
+      // Hide the modal using jQuery's modal method
+      $('#selectLocationModal').modal('hide');
+    });
+  // Event listener for Cancel button click
+  document.getElementById('cancel').addEventListener('click', function(event) {  
+    // Navigate back to the last page
+    window.history.back();
+  });
+
     document.getElementById('geocodingForm').addEventListener('submit', async function (event) {
       event.preventDefault()
       const locationName = document.getElementById('id_location').value
@@ -53,11 +67,12 @@
         results.forEach((result, index) => {
           const listItem = document.createElement('li')
           listItem.classList.add('list-group-item')
-          listItem.data2 = result
-          listItem.textContent = result.components.country + '(' + result.components.state + ') ' + result.components._type
+//          listItem.data2 = result
+//         listItem.textContent = 
+          listItem.textContent = result.formatted + '(' + result.components.state + ') ' + result.components._type
           listItem.addEventListener('click', () => {
             // Handle selection of location
-            console.log('Selected location:', result)
+            console.log('Selected location click:', result)
 
                       // Proceed with the single result
                       fetch('/hmeteo/create/', {
@@ -66,7 +81,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                       },
-                      body: JSON.stringify({ location_geo: location })
+                      body: JSON.stringify({ location_geo: result })
                       });
 
             $('#selectLocationModal').modal('hide') // Close the modal dialog
@@ -76,15 +91,6 @@
     
         // Show the modal dialog
         jQuery('#selectLocationModal').modal('show')
-        // Add event listener to location list items
-        $('#locationList').on('click', 'li', function () {
-          // Get the selected location from the data attribute
-          const location = this.data2
-          // Do something with the selected location
-          console.log('Selected location:', location)
-          // Close the modal if necessary
-          $('#selectLocationModal').modal('hide')
-        })
         return
       } else if (results.length < 1) {
         alert('Not found')

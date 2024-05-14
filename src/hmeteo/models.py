@@ -25,7 +25,7 @@ class HTheManager(models.Manager):
         if  query is None:
             return self.get_queryset().none()
         return self.get_queryset().search(query)
-
+    
 
 class HTheItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='hmeteo')
@@ -45,7 +45,7 @@ class HTheItem(models.Model):
     def get_delete_url(self):
         return f"{self.get_absolute_url()}/delete"
     def fetch_weather_data(self, url, params):
-        cache_session = CachedSession('.cache', expire_after=-1)
+        cache_session = CachedSession('.cache', expire_after=3600)
         retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
         openmeteo = Client(session=retry_session)
 
@@ -54,8 +54,8 @@ class HTheItem(models.Model):
             response = responses[0].Daily()
             data = {
                 "date": pd.date_range(
-                    start=pd.to_datetime(response.Time(), unit="s"),
-                    end=pd.to_datetime(response.TimeEnd(), unit="s"),
+                    start=pd.to_datetime(response.Time(), unit="s", utc = True),
+                    end=pd.to_datetime(response.TimeEnd(), unit="s", utc = True),
                     freq=pd.Timedelta(seconds=response.Interval()),
                     inclusive="left"
                 ),
@@ -63,10 +63,10 @@ class HTheItem(models.Model):
                 "tmin": response.Variables(1).ValuesAsNumpy(),
                 "rain": response.Variables(2).ValuesAsNumpy()
             }
-
+#            print(data)
             dataframe = pd.DataFrame(data=data)
             dataframe.fillna(0, inplace=True)
-            dataframe["date"] = dataframe["date"].dt.strftime("%Y-%m-%d")
+            dataframe["date"] = dataframe["date"].dt.strftime("%a %d %b")
 
             return {
                 'dates': dataframe["date"].tolist(),

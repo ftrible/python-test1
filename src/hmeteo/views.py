@@ -28,7 +28,27 @@ def create(request):
         print(form.errors)
     context ={"title":'Location Create', "form": form}
     return render(request,template, context)
-
+def createwithobject(request):
+    if request.method == 'POST':
+        # Retrieve the JSON object from the request body
+        data = json.loads(request.body)
+        result = data.get('location_geo')
+        # Use the location_geo data as needed
+        # For example:
+        #print(f"Location {result}")
+        obj = HTheItem()
+        obj.user=request.user
+        obj.lat = result['geometry']['lat']
+        obj.lng = result['geometry']['lng']
+        obj.location = result['formatted']
+        obj.slug = HObjForm.generate_unique_slug(location_name=result['formatted'])
+        obj.save()
+        print(f"obj {obj.lng} {obj.lat} {obj.slug}")
+        # Return a JsonResponse or HttpResponse as needed       
+        return JsonResponse({'message': 'location created successfully'}, status=200)
+    else:
+        # Handle other HTTP methods if needed
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
 def geocode(request):
     print("********* Geocode ************")
     json_data=request.body.decode('utf-8')

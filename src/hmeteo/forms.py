@@ -34,7 +34,8 @@ class HObjForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
-    def generate_unique_slug(self, location_name):
+    @staticmethod
+    def generate_unique_slug(location_name):
         slug_base = slugify(location_name)
         slug = slug_base
         count = 1
