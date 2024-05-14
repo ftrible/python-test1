@@ -4,3 +4,4 @@ __pycache__
 .DS_Store
 staticfiles
 static_cdn_test
+.cache.sqlite
