@@ -5,3 +5,5 @@ __pycache__
 staticfiles
 static_cdn_test
 .cache.sqlite
+src/.cache.sqlite
+src/http_cache.sqlite
