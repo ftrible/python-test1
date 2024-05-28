@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from hmeteo.models import HTheItem
+from django.views.decorators.csrf import csrf_exempt
 from hmeteo.forms import HObjForm
 from django.http import JsonResponse
 # https://opencagedata.com/dashboard#geocoding
@@ -98,5 +99,22 @@ def delete(request,slug_id):
     context ={"title":'Location Delete', "item": pobj}
     template="hmeteo/delete.html"
     return render(request,template, context)
+
+@csrf_exempt
+def update_location(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        item_id = data.get('id')
+        new_location = data.get('new_location')
+        # Update the database
+        try:
+            item = HTheItem.objects.get(id=item_id)
+            item.location = new_location
+            item.save()
+            return JsonResponse({'success': True})
+        except HTheItem.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
  

@@ -75,15 +75,27 @@
             console.log('Selected location click:', result)
 
                       // Proceed with the single result
-                      fetch('/hmeteo/create/', {
+                      const response3 = fetch('/hmeteo/create/', {
                         method: 'POST',
                         headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                       },
                       body: JSON.stringify({ location_geo: result })
+                      }).then(response => {
+                        if (response.ok) {
+                            // Redirect
+                            window.location.href = '/hmeteo';
+                            console.log('redirect');
+                        } else {
+                            // Handle error
+                            console.error('Error:', response.status);
+                        }
+                      })
+                      .catch(error => {
+                          // Handle network error
+                          console.error('Network error:', error);
                       });
-
             $('#selectLocationModal').modal('hide') // Close the modal dialog
           })
           locationList.appendChild(listItem)
@@ -93,10 +105,10 @@
         jQuery('#selectLocationModal').modal('show')
         return
       } else if (results.length < 1) {
-        alert('Not found')
+        alert('Location Not found')
         return
       }
-      const location2 = results[0].geometry
+      const location2 = results[0]
       // Proceed with the single result
       const response2 = await fetch('/hmeteo/create/', {
         method: 'POST',
@@ -106,6 +118,10 @@
         },
         body: JSON.stringify({ location_geo: location2 })
       })
+      if (response2.ok) {
+        // Redirect to /hmeteo
+        window.location.href = '/hmeteo';
+      }
     })
   </script>
 {% endblock %}

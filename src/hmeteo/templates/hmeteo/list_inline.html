@@ -1,15 +1,15 @@
 <div class="card">
-  <div class="card-header">{{ item.location }}</div>
+  <div class="card-header" id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</div>
   <div class="card-body {% if not item.publish_date %}{% endif %}">
     {% if item.image %}
-      <img id="bcki{{item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+      <img id="bcki{{ item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
     {% endif %}
     {% if detail %}
-    <h5 class="card-title">Weather History</h5>
+      <h5 class="card-title">Weather History</h5>
     {% else %}
-    <h5 class="card-title">Weather Forecast</h5>
-   {% endif %}
-    <canvas id="tc{{item.slug|cut:'-' }}" class="card-body"></canvas>
+      <h5 class="card-title">Weather Forecast</h5>
+    {% endif %}
+    <canvas id="tc{{ item.slug|cut:'-' }}" class="card-body"></canvas>
     <script type="text/javascript">
             var ctx{{item.slug|cut:"-"}} = document.getElementById("tc{{item.slug|cut:'-'}}").getContext('2d');
            {% if detail %}
@@ -106,6 +106,61 @@
                 }]
 
             });
+            document.addEventListener('DOMContentLoaded', function() {
+                var header = document.getElementById("card-header-{{ item.id }}")
+               
+                  header.addEventListener('click', function() {
+                    const itemId = header.getAttribute('data-item-id');
+                    const currentText = header.textContent;
+                    console.log('current Text='+currentText)
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentText;
+                    input.className = 'form-control';
+              
+                    header.innerHTML = '';
+                    header.appendChild(input);
+                    input.focus();
+              
+                    // Handle saving on Enter key
+                    input.addEventListener('keydown', function(event) {
+                      if (event.key === 'Enter') {
+                        saveNewText(input.value, itemId, header);
+                      }
+                    });
+              
+                    // Handle saving on blur (click outside)
+                    input.addEventListener('blur', function() {
+                      saveNewText(input.value, itemId, header);
+                    });
+                  });
+             
+              
+                function saveNewText(newText, itemId, header) {
+                  header.innerHTML = newText;
+              
+                  // Send AJAX request to update the database
+                  fetch('/hmeteo/update-location/', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token
+                    },
+                    body: JSON.stringify({ id: itemId, new_location: newText })
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      console.log('Location updated successfully');
+                    } else {
+                      console.error('Error updating location');
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error:', error);
+                  });
+                }
+              });              
         </script>
     {% if nobuttons %}
 
