@@ -2,41 +2,43 @@
   <div class="card-header" id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</div>
   <div class="card-body {% if not item.publish_date %}{% endif %}">
     {% if item.image %}
-      <img id="bcki{{ item.slug|cut:'-' }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+      <img id="bcki{{ item.id }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
     {% endif %}
     {% if detail %}
       <h5 class="card-title">Weather History</h5>
     {% else %}
       <h5 class="card-title">Weather Forecast</h5>
     {% endif %}
-    <canvas id="tc{{ item.slug|cut:'-' }}" class="card-body"></canvas>
+    <canvas id="tc{{ item.id }}" class="card-body"></canvas>
     <script type="text/javascript">
-            var ctx{{item.slug|cut:"-"}} = document.getElementById("tc{{item.slug|cut:'-'}}").getContext('2d');
+            var tmx{{item.id}} = {{item.get_max_and_min_temps|safe}};
+            console.log(Math.ceil(tmx{{item.id}}.max));
+            var ctx{{item.id}} = document.getElementById("tc{{ item.id }}").getContext('2d');
            {% if detail %}
-            var data{{item.slug|cut:"-"}} = {{ item.get_historical_temperature |safe }};
+            var data{{item.id}} = {{ item.get_historical_temperature |safe }};
            {% else %}
-            var data{{item.slug|cut:"-"}} = {{ item.get_forecast_temperature |safe }};
+            var data{{item.id}} = {{ item.get_forecast_temperature |safe }};
            {% endif %}
-            var dates{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.dates;
-            var tmax{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmax;
-            var tmin{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.tmin;
-            var rain{{item.slug|cut:"-"}} = data{{item.slug|cut:"-"}}.rain;
+            var dates{{item.id}} = data{{item.id}}.dates;
+            var tmax{{item.id}} = data{{item.id}}.tmax;
+            var tmin{{item.id}} = data{{item.id}}.tmin;
+            var rain{{item.id}} = data{{item.id}}.rain;
            {% if item.image %}
-            var bi{{item.slug|cut:"-"}} = document.getElementById("bcki{{item.slug|cut:'-'}}")
-            bi{{item.slug|cut:"-"}}.hidden=true;
+            var bi{{item.id}} = document.getElementById("bcki{{ item.id }}")
+            bi{{item.id}}.hidden=true;
             {% endif %}
             var gradient;
-            var myChart = new Chart(ctx{{item.slug|cut:"-"}}, {
+            var myChart = new Chart(ctx{{item.id}}, {
                 data: {
-                    labels: dates{{item.slug|cut:"-"}},
+                    labels: dates{{item.id}},
                     type: 'bar',
                     datasets: [
                         {
                             label: 'Temperatures',
                             type: 'bar',
                             yAxisID: 'temperature', // Use the 'temperature' axis
-                            data: tmax{{item.slug|cut:"-"}}.map((value, index) => {
-                                return [ tmin{{item.slug|cut:"-"}}[index], value ];
+                            data: tmax{{item.id}}.map((value, index) => {
+                                return [ tmin{{item.id}}[index], value ];
                             }),
                             backgroundColor: function(context) {
                                 const chart = context.chart;
@@ -64,7 +66,7 @@
                             label: 'Rain',
                             type: 'line',
                             yAxisID: 'rainfall', // Use the 'rainfall' axis
-                            data: rain{{item.slug|cut:"-"}},
+                            data: rain{{item.id}},
                             backgroundColor: 'rgba(0, 0, 255, 0.5)',
                             borderColor: 'rgba(0, 0, 255, 1)',
                             borderWidth: 2,
@@ -79,8 +81,8 @@
                     scales: {
                         temperature: {
                             position: 'left',
-                            min: -5,
-                            max: 25,
+                            min: Math.round(tmx{{item.id}}.min),
+                            max: Math.ceil(tmx{{item.id}}.max),
                         },
                         rainfall: {
                             position: 'right',
@@ -95,7 +97,7 @@
                         ctx.globalAlpha = 0.3;
                         ctx.globalCompositeOperation = 'destination-over';
                         {% if item.image %}
-                            ctx.drawImage(bi{{item.slug|cut:"-"}}, 0, 0, width, height);
+                            ctx.drawImage(bi{{item.id}}, 0, 0, width, height);
                         {% else %}
                             ctx.fillStyle = "rgba(100, 150, 220, 1)";
                             ctx.fillRect(0, 0, width, height);

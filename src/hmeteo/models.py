@@ -110,3 +110,26 @@ class HTheItem(models.Model):
             "forecast_days": user_profile.daysForward
         }
         return self.fetch_weather_data(url, params)
+    def get_max_and_min_temps(self):
+        max_of_max, min_of_min = HTheItem.compute_max_of_max_and_min_of_min()
+        context = {
+            "max": max_of_max,
+            "min": min_of_min
+        }    
+        return context
+    @classmethod
+    def compute_max_of_max_and_min_of_min(cls):
+        all_items = cls.objects.all()
+        max_temps = []
+        min_temps = []
+        
+        for item in all_items:
+            weather_data = item.get_forecast_temperature()
+            if weather_data:
+                max_temps.extend(weather_data['tmax'])
+                min_temps.extend(weather_data['tmin'])
+        
+        max_of_max = max(max_temps) if max_temps else None
+        min_of_min = min(min_temps) if min_temps else None
+        
+        return max_of_max, min_of_min
