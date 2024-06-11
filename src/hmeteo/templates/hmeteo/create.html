@@ -73,15 +73,16 @@
           listItem.addEventListener('click', () => {
             // Handle selection of location
             console.log('Selected location click:', result)
-
+            const form = document.getElementById('geocodingForm');
+            const formData = new FormData(form);
+            formData.append( 'location_geo' , JSON.stringify(result) );
                       // Proceed with the single result
                       const response3 = fetch('/hmeteo/create/', {
                         method: 'POST',
                         headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                       },
-                      body: JSON.stringify({ location_geo: result })
+                      body: formData 
                       }).then(response => {
                         if (response.ok) {
                             // Redirect
@@ -110,13 +111,15 @@
       }
       const location2 = results[0]
       // Proceed with the single result
+      const form2 = document.getElementById('geocodingForm');
+      const formData2 = new FormData(form2);
+      formData.append('location_geo' , JSON.stringify(location2));
       const response2 = await fetch('/hmeteo/create/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'X-CSRFToken': '{{ csrf_token }}'
         },
-        body: JSON.stringify({ location_geo: location2 })
+        body: formData //JSON.stringify({ location_geo: location2 })
       })
       if (response2.ok) {
         // Redirect to /hmeteo

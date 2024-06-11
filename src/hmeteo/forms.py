@@ -10,6 +10,13 @@ class HObjForm(forms.ModelForm):
     class Meta:
         model=HTheItem
         fields=['location','image' ]
+
+    def __init__(self, *args, **kwargs):
+        super(HObjForm, self).__init__(*args, **kwargs)
+        # Set default value for location if not provided
+        if not self.data.get('location'):
+            self.data = self.data.copy()
+            self.data['location'] = 'Default Location'  # Set your default value here
     def save(self, commit=True):
         instance = super(HObjForm, self).save(commit=False)
         # Get latitude and longitude from OpenCageGeocode API

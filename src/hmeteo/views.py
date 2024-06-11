@@ -31,22 +31,28 @@ def create(request):
     return render(request,template, context)
 def createwithobject(request):
     if request.method == 'POST':
-        # Retrieve the JSON object from the request body
-        data = json.loads(request.body)
-        result = data.get('location_geo')
-        # Use the location_geo data as needed
-        # For example:
-        #print(f"Location {result}")
-        obj = HTheItem()
-        obj.user=request.user
-        obj.lat = result['geometry']['lat']
-        obj.lng = result['geometry']['lng']
-        obj.location = result['formatted']
-        obj.slug = HObjForm.generate_unique_slug(location_name=result['formatted'])
-        obj.save()
-        print(f"obj {obj.lng} {obj.lat} {obj.slug}")
-        # Return a JsonResponse or HttpResponse as needed       
-        return JsonResponse({'message': 'location created successfully'}, status=200)
+        form = HObjForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Retrieve the additional JSON data from the request.POST
+            location_geo = request.POST.get('location_geo')
+            if location_geo:
+                location_geo = json.loads(location_geo)  # Parse the JSON string
+                # Manually set the form instance fields using location_geo data
+                obj = form.save(commit=False)
+                obj.user = request.user
+                obj.lat = location_geo['geometry']['lat']
+                obj.lng = location_geo['geometry']['lng']
+                obj.location = location_geo['formatted']
+                obj.slug = HObjForm.generate_unique_slug(location_name=location_geo['formatted'])
+                obj.save()
+                # Return a JsonResponse or HttpResponse as needed
+                return JsonResponse({'message': 'Location created successfully'}, status=200)
+
+            else:
+                return JsonResponse({'error': 'location_geo not provided'}, status=400)
+        else:
+            return JsonResponse({'error': form.errors}, status=400)
+
     else:
         # Handle other HTTP methods if needed
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
