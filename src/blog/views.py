@@ -2,14 +2,16 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import TheItem
+from hmeteo.models import HTheItem
 from .forms import ObjForm
 
 # Create your views here.
 def home_page(request):
     context ={"title":'Home'}
     template="home.html"
-    queryset=TheItem.objects.all().published()
-    context ={"object_list": queryset[:2]}
+    bqueryset=TheItem.objects.all().published()
+    hqueryset=HTheItem.objects.all()
+    context ={"object_list": bqueryset[:2], "meteo_list": hqueryset[:2]}
     return render(request,template, context)
 
 # CRUD
