@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
+
 {% block content %}
+  <!-- Form for geocoding -->
   <form method="POST" action="hmeteo-new" enctype="multipart/form-data" id="geocodingForm">
     {% csrf_token %}
     {{ form.as_p }}
     <button class="btn" type="Submit" id="submit">OK</button>
     <button class="btn" type="Cancel" id="cancel">Cancel</button>
   </form>
-  <!-- Modal -->
+
+  <!-- Modal for selecting location -->
   <div class="modal fade" id="selectLocationModal" tabindex="-1" role="dialog" aria-labelledby="selectLocationModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -16,35 +19,34 @@
         </div>
         <div class="modal-body">
           <ul id="locationList" class="list-group">
-            <!-- Populate this list dynamically with the location options -->
+            <!-- List to be populated dynamically with location options -->
           </ul>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close2">Close</button>
-          <!-- Add any other buttons you need -->
         </div>
       </div>
     </div>
   </div>
-  <script type="text/javascript">
-    $('#close1').on('click', function() {
-      // Hide the modal using jQuery's modal method
-      $('#selectLocationModal').modal('hide');
-    });
-    $('#close2').on('click', function() {
-      // Hide the modal using jQuery's modal method
-      $('#selectLocationModal').modal('hide');
-    });
-  // Event listener for Cancel button click
-  document.getElementById('cancel').addEventListener('click', function(event) {  
-    // Navigate back to the last page
-    window.history.back();
-  });
 
-    document.getElementById('geocodingForm').addEventListener('submit', async function (event) {
-      event.preventDefault()
-      const locationName = document.getElementById('id_location').value
-      // Send AJAX request to Django view
+  <script type="text/javascript">
+    // Close modal when 'Close' buttons are clicked
+    $('#close1, #close2').on('click', function() {
+      $('#selectLocationModal').modal('hide');
+    });
+
+    // Event listener for Cancel button click
+    document.getElementById('cancel').addEventListener('click', function(event) {
+      window.history.back();
+    });
+
+    // Event listener for form submission
+    document.getElementById('geocodingForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const locationName = document.getElementById('id_location').value;
+
+      // Send AJAX request to Django view for geocoding
       const response = await fetch('/hmeteo/geocode/', {
         method: 'POST',
         headers: {
@@ -52,79 +54,72 @@
           'X-CSRFToken': '{{ csrf_token }}'
         },
         body: JSON.stringify({ location_name: locationName })
-      })
-    
-      const data = await response.json()
-    
+      });
+
+      const results = await response.json();
+
       // Process geocoding results
-      const results = data
       if (results.length > 1) {
-        // Show dialog to select location
-        // Populate the modal dialog with location options
-        const locationList = document.getElementById('locationList')
-        locationList.innerHTML = '' // Clear previous options
-    
-        results.forEach((result, index) => {
-          const listItem = document.createElement('li')
-          listItem.classList.add('list-group-item')
-//          listItem.data2 = result
-//         listItem.textContent = 
-          listItem.textContent = result.formatted + '(' + result.components.state + ') ' + result.components._type
+        // Show dialog to select location if multiple results
+        const locationList = document.getElementById('locationList');
+        locationList.innerHTML = '';
+
+        results.forEach((result) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('list-group-item');
+          listItem.textContent = `${result.formatted} (${result.components.state}) ${result.components._type}`;
           listItem.addEventListener('click', () => {
             // Handle selection of location
-            console.log('Selected location click:', result)
             const form = document.getElementById('geocodingForm');
             const formData = new FormData(form);
-            formData.append( 'location_geo' , JSON.stringify(result) );
-                      // Proceed with the single result
-                      const response3 = fetch('/hmeteo/create/', {
-                        method: 'POST',
-                        headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                      },
-                      body: formData 
-                      }).then(response => {
-                        if (response.ok) {
-                            // Redirect
-                            window.location.href = '/hmeteo';
-                            console.log('redirect');
-                        } else {
-                            // Handle error
-                            console.error('Error:', response.status);
-                        }
-                      })
-                      .catch(error => {
-                          // Handle network error
-                          console.error('Network error:', error);
-                      });
-            $('#selectLocationModal').modal('hide') // Close the modal dialog
-          })
-          locationList.appendChild(listItem)
-        })
-    
-        // Show the modal dialog
-        jQuery('#selectLocationModal').modal('show')
-        return
+            formData.append('location_geo', JSON.stringify(result));
+
+            // Proceed with the selected location
+            fetch('/hmeteo/create/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: formData
+            }).then(response => {
+              if (response.ok) {
+                window.location.href = '/hmeteo';
+              } else {
+                console.error('Error:', response.status);
+              }
+            }).catch(error => {
+              console.error('Network error:', error);
+            });
+
+            $('#selectLocationModal').modal('hide');
+          });
+          locationList.appendChild(listItem);
+        });
+
+        $('#selectLocationModal').modal('show');
+        return;
       } else if (results.length < 1) {
-        alert('Location Not found')
-        return
+        alert('Location Not found');
+        return;
       }
-      const location2 = results[0]
-      // Proceed with the single result
+
+      // Handle single geocoding result
+      const location2 = results[0];
       const form2 = document.getElementById('geocodingForm');
       const formData2 = new FormData(form2);
-      formData.append('location_geo' , JSON.stringify(location2));
+      formData2.append('location_geo', JSON.stringify(location2));
+
       const response2 = await fetch('/hmeteo/create/', {
         method: 'POST',
         headers: {
           'X-CSRFToken': '{{ csrf_token }}'
         },
-        body: formData //JSON.stringify({ location_geo: location2 })
-      })
+        body: formData2
+      });
+
       if (response2.ok) {
-        // Redirect to /hmeteo
         window.location.href = '/hmeteo';
       }
-    })
+    });
   </script>
 {% endblock %}

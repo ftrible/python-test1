@@ -23,10 +23,6 @@ class HObjForm(forms.ModelForm):
         location_name = self.cleaned_data['location']
         OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
         results = OCG.geocode(location_name)
-#        print(len(results))
-#        for town in results:
-#            print(town['components']['country'])
-#            print(town['components']['state'])
         if len(results) > 1:
             # Show a dialog to select the desired location
             print("More than 1 " + str(len(results)))
