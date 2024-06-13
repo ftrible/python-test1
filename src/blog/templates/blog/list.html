@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+{% if request.user.is_anonymous %}
+{% else %}
+<a href="/blog-new" class="card-link btn btn-primary">Add Blog Post</a>
+{% endif %}
 <H1>{{title}}</H1>
 <div class="row">
 {% for post in object_list %}

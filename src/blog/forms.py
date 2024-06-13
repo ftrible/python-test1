@@ -6,6 +6,9 @@ class ObjForm(forms.ModelForm):
     class Meta:
         model=TheItem
         fields=['title','slug','image', 'content', 'publish_date']
+        widgets = {
+            'publish_date': forms.TextInput(attrs={'id': 'id_publish_date'}),
+        }
 #   title=forms.CharField()
 #    slug=forms.SlugField()
 #   content=forms.CharField(widget=forms.Textarea)
