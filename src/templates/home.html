@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
+    /* Ensure row items are packed to the left */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.justify-content-start {
+    justify-content: flex-start;
+}
     /* Position the "More" buttons */
 .position-relative {
     position: relative;
@@ -31,9 +40,9 @@
 <H1>{{title}}</H1>
 <div class="row position-relative">
     <div class="col-12">
-        <div class="row">
+        <div class="row justify-content-start">
             {% for post in object_list %}
-            <div class='col-12 col-md-4 mx-auto'>
+            <div class='col-12 col-md-4'>
                 {% include 'blog/list_inline.html' with item=post detail=False %}
             </div>
             {% endfor %}
@@ -44,9 +53,9 @@
 <HR>
 <div class="row position-relative">
     <div class="col-12">
-        <div class="row">
+        <div class="row justify-content-start">
             {% for meteo in meteo_list %}
-            <div class='col-12 col-md-4 mx-auto'>
+            <div class='col-12 col-md-4'>
                 {% include 'hmeteo/list_inline.html' with item=meteo detail=False %}
             </div>
             {% endfor %}
