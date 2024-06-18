@@ -34,7 +34,8 @@ class TheItem(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     objects=TheManager()
-
+    def __str__(self):
+        return f"{self.title} by {self.user}: {self.publish_date}, {self.timestamp}"
     class Meta:
         ordering=['-publish_date', '-updated', '-timestamp']
     def get_absolute_url(self):

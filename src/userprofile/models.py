@@ -6,3 +6,5 @@ class UserProfile(models.Model):
     # Add additional user-specific fields here
     daysForward=models.IntegerField(default=3)
     daysBackwards=models.IntegerField(default=10)
+    def __str__(self):
+        return f"{self.user}: {self.daysForward}, {self.daysBackwards}"

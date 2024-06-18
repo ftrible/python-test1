@@ -7,6 +7,7 @@ from openmeteo_requests import Client
 from retry_requests import retry
 from datetime import datetime, timedelta
 from requests_cache import CachedSession
+from django.core.exceptions import ValidationError
 import pandas as pd
 import json
 from userprofile.models import UserProfile
@@ -35,7 +36,13 @@ class HTheItem(models.Model):
     lng=models.FloatField(null=True, verbose_name='Longitude')
     slug = models.SlugField(unique=True)
     objects=HTheManager()
- 
+    def __str__(self):
+        return f"{self.slug} by {self.user}: '{self.location}' {self.lat}°, {self.lng}°"
+    def clean(self):
+        if self.lat < -180 or self.lat > 180:
+            raise ValidationError('Latitude out of range')
+        if self.lng < -180 or self.lng > 180:
+            raise ValidationError('Longitude out of range')
     class Meta:
         ordering=['-location']
     def get_absolute_url(self):
