@@ -1,7 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.utils import timezone
-from django.utils.safestring import mark_safe
 from django.db.models import Q
 from openmeteo_requests import Client
 from retry_requests import retry
@@ -9,7 +7,6 @@ from datetime import datetime, timedelta
 from requests_cache import CachedSession
 from django.core.exceptions import ValidationError
 import pandas as pd
-import json
 from userprofile.models import UserProfile
 # Create your models here.
 User = settings.AUTH_USER_MODEL

@@ -1,5 +1,6 @@
-from smtplib import SMTPAuthenticationError
 from django.contrib.auth.forms import AuthenticationForm,PasswordResetForm  
+from django.shortcuts import render, redirect                                
+from django.contrib.auth import authenticate, login , logout     
 
 def contact_page(request):
     context ={"title":'Contact'}
@@ -9,10 +10,7 @@ def contact_page(request):
 def about_page(request):
     context ={"title":'About'}
     template="about.html"
-    return render(request,template, context)
-
-from django.shortcuts import render, redirect                                
-from django.contrib.auth import authenticate, login , logout                                                                         
+    return render(request,template, context)                                                                   
 
 def logout_view(request):     
     logout(request)

@@ -1,6 +1,5 @@
-from django.urls import path, re_path
+from django.urls import path
 from hmeteo import views
-from searches.views import search_view
 from django.conf import settings
 urlpatterns = [
     path('hmeteo/', views.list, name='list'),

@@ -1,6 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
 from hmeteo.models import HTheItem
 from django.views.decorators.csrf import csrf_exempt
 from hmeteo.forms import HObjForm
