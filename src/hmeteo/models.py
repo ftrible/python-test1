@@ -8,7 +8,7 @@ from requests_cache import CachedSession  # Import caching library for API respo
 from django.core.exceptions import ValidationError  # Import validation error handling
 import pandas as pd  # Import pandas for data manipulation
 from userprofile.models import UserProfile  # Import UserProfile model
-
+import requests
 # Create your models here.
 User = settings.AUTH_USER_MODEL  # Get the User model from settings
 
@@ -76,6 +76,10 @@ class HTheItem(models.Model):
     A unique slug for the location, used in URLs.
     """
     objects = HTheManager()  # Use the custom Manager
+    """
+    The webcam image
+    """
+    webcam_image = None
 
     def __str__(self):
         """
@@ -88,14 +92,32 @@ class HTheItem(models.Model):
         Validates the latitude and longitude values.
         """
         super().clean()  # Call the parent class's clean method
-        if self.lat < -180 or self.lat > 180:
-            raise ValidationError('Latitude out of range')
-        if self.lng < -180 or self.lng > 180:
-            raise ValidationError('Longitude out of range')
+#        if self.lat < -180 or self.lat > 180:
+#            raise ValidationError('Latitude out of range')
+#        if self.lng < -180 or self.lng > 180:
+#            raise ValidationError('Longitude out of range')
 
     class Meta:
         ordering = ['-location']  # Order items by location in descending order
 
+    def get_windy_webcam_image(self):
+        if (self.webcam_image is not None):
+            return self.webcam_image
+        windykey="FLGHmea20gemHtaSa56lyD6OGkiCnwBc"
+        url = f"https://api.windy.com/webcams/api/v3/webcams?offset=0&nearby={self.lat},{self.lng},10&include=images"
+        headers = {
+            "x-windy-api-key": windykey
+        }
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        if data['webcams'][0]:
+            webcam_id = data['webcams'][0]['webcamId']
+            self.webcam_image=data['webcams'][0]['images']['current']['preview']
+            print(f"***************id={webcam_id}*****************")
+            print(f"***************{self.webcam_image}***************")
+            return self.webcam_image
+        print("Error fetching webcam image")
+        return None
     def get_absolute_url(self):
         """
         Returns the absolute URL for the location detail view.

@@ -1,6 +1,9 @@
 <div class="card">
   <div class="card-header" id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</div>
   <div class="card-body {% if not item.publish_date %}{% endif %}">
+    {% if item.get_windy_webcam_image %}
+      <img id="bckw{{ item.id }}" src="{{ item.get_windy_webcam_image }}" class="w-50 card-img-bottom img-thumbnail img-fluid" />
+    {% endif  %}
     {% if item.image %}
       <img id="bcki{{ item.id }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
     {% endif %}
@@ -94,7 +97,7 @@
                         var ctx = chart.ctx;
                         var width = chart.width;
                         var height = chart.height;
-                        ctx.globalAlpha = 0.3;
+                        ctx.globalAlpha = 0.8;
                         ctx.globalCompositeOperation = 'destination-over';
                         {% if item.image %}
                             ctx.drawImage(bi{{item.id}}, 0, 0, width, height);
