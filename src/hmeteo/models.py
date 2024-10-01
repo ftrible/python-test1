@@ -111,10 +111,8 @@ class HTheItem(models.Model):
         response = requests.get(url, headers=headers)
         data = response.json()
         if data['webcams'][0]:
-            webcam_id = data['webcams'][0]['webcamId']
+#            webcam_id = data['webcams'][0]['webcamId']
             self.webcam_image=data['webcams'][0]['images']['current']['preview']
-            print(f"***************id={webcam_id}*****************")
-            print(f"***************{self.webcam_image}***************")
             return self.webcam_image
         print("Error fetching webcam image")
         return None

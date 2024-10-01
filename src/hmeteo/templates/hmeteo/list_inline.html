@@ -1,13 +1,14 @@
 <div class="card">
-  <div class="card-header" id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</div>
-  <div class="card-body {% if not item.publish_date %}{% endif %}">
+  <div class="card-header" id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}
     {% if item.get_windy_webcam_image %}
-      <img id="bckw{{ item.id }}" src="{{ item.get_windy_webcam_image }}" class="w-50 card-img-bottom img-thumbnail img-fluid" />
-    {% endif  %}
+    <img id="bckw{{ item.id }}" src="{{ item.get_windy_webcam_image }}" class="w-25 rounded img-fluid card-img float-right" />
+  {% endif  %}
+   </div>
+  <div class="card-body {% if not item.publish_date %}{% endif %}">
     {% if item.image %}
-      <img id="bcki{{ item.id }}" src="{{ item.image.url }}" class="w-50 card-img-overlay img-thumbnail img-fluid" />
+      <img id="bcki{{ item.id }}" src="{{ item.image.url }}" class="w-50 card-img img-thumbnail img-fluid" />
     {% endif %}
-    {% if detail %}
+   {% if detail %}
       <h5 class="card-title">Weather History</h5>
     {% else %}
       <h5 class="card-title">Weather Forecast</h5>
