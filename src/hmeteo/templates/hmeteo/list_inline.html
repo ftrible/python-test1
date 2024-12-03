@@ -83,34 +83,122 @@
                 options: {
                     responsive: true,
                     scales: {
+                      x: {
+                        ticks: {
+                            color: 'white', // Tick color
+                            font: {
+                                size: 14, // Tick font size
+                                weight: 'bold', // Tick font weight
+                            },
+                            //callback: function(value, index, ticks) {
+                            //  return ""; // Hide default tick labels
+                            //},
+                        },
+                        title: {
+                            display: true,
+                            text: 'Dates', // Horizontal axis title
+                            color: 'white', // Title color
+                            font: {
+                                size: 16, // Title font size
+                                weight: 'bold', // Title font weight
+                            },
+                        },
+                    },
                         temperature: {
                             position: 'left',
                             min: Math.round(tmx{{item.id}}.min),
                             max: Math.ceil(tmx{{item.id}}.max),
+                            ticks: {
+                              color: 'red', // Axis tick color
+                              font: {
+                                  size: 14, // Axis tick font size
+                                  weight: 'bold', // Axis tick font weight
+                              },
+                          },
+                          title: {
+                              display: true,
+                              text: 'Temperature (°C)', // Axis title
+                              color: 'red', // Axis title color
+                              font: {
+                                  size: 16, // Axis title font size
+                                  weight: 'bold', // Axis title font weight
+                              },
+                          },
                         },
                         rainfall: {
                             position: 'right',
+                            ticks: {
+                              color: 'blue',
+                              font: {
+                                  size: 14,
+                                  weight: 'bold',
+                              },
+                          },
+                          title: {
+                              display: true,
+                              text: 'Rainfall (mm)',
+                              color: 'blue',
+                              font: {
+                                  size: 16,
+                                  weight: 'bold',
+                              },
+                          },
                         }
                     }
                 },
-                plugins: [{
-                    beforeDraw: function(chart) {
-                        var ctx = chart.ctx;
-                        var width = chart.width;
-                        var height = chart.height;
-                        ctx.globalAlpha = 0.8;
-                        ctx.globalCompositeOperation = 'destination-over';
-                        {% if item.image %}
-                            ctx.drawImage(bi{{item.id}}, 0, 0, width, height);
-                        {% else %}
-                            ctx.fillStyle = "rgba(100, 150, 220, 1)";
-                            ctx.fillRect(0, 0, width, height);
-                        {% endif %}
-                        ctx.globalCompositeOperation = 'source-over';
-                        ctx.globalAlpha = 1;
-                    }
+                plugins: [
+                {
+                  id: 'backgroundPlugin',
+                  beforeDraw: function(chart) {
+                      var ctx = chart.ctx;
+                      var width = chart.width;
+                      var height = chart.height;
+                      // ctx.save();
+                      ctx.globalAlpha = 0.8;
+                      ctx.globalCompositeOperation = 'destination-over';
+                      {% if item.image %}
+                          ctx.drawImage(bi{{item.id}}, 0, 0, width, height);
+                      {% else %}
+                          ctx.fillStyle = "rgba(100, 150, 220, 1)";
+                          ctx.fillRect(0, 0, width, height);
+                      {% endif %}
+                      ctx.globalCompositeOperation = 'source-over';
+                      ctx.globalAlpha = 1;
+                      // ctx.restore();
+                  },
+                },
+                {
+                  id: 'customLabelsPlugin',
+                  weight: 1000, // ensure drawn last
+                  afterDraw: function(chart) {
+                    return "";// TODO - does not work well yet
+                    const ctx = chart.ctx;
+                    const xAxis = chart.scales.x;
+                    //const labels = xAxis.ticks.map(tick => tick.label);
+                    const labels = chart.data.labels; // Use the chart's labels directly
+                    if (!labels || labels.length === 0) return;
+                    const rotation = xAxis.options.ticks.rotation || 0; // Rotation in degrees
+                    const rotationRadians = (rotation * Math.PI) / 180; // Convert to radians
+                    labels.forEach((label, index) => {
+                        const tick = xAxis.ticks[index]; // Access the tick directly
+                        //const x = tick.x
+                        const x = xAxis.getPixelForTick(index) - 30;
+                        // Fallback: Use the bottom of the axis if tick.y isn't available
+                        const y = xAxis.bottom - 30;
+                        ctx.save();
+                        // First part of the label (red)
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 12px Arial';
+                        // Translate to the tick position and apply rotation
+                        ctx.translate(x, y);
+                        ctx.rotate(rotationRadians);
+                        ctx.fillText(label, 0,0);
+                        ctx.fillStyle = 'black';
+                        ctx.fillText(label, 1, 1);
+                        ctx.restore();
+                    });
+                  },
                 }]
-
             });
             document.addEventListener('DOMContentLoaded', function() {
                 var header = document.getElementById("card-header-{{ item.id }}")
