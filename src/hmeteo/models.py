@@ -12,7 +12,7 @@ import requests
 # Create your models here.
 User = settings.AUTH_USER_MODEL  # Get the User model from settings
 
-# Define a custom QuerySet for HTheItem
+# Define a custom QuerySet for MeteoItem
 class HTheQuerySet(models.QuerySet):
     def search(self, query):
         """
@@ -22,12 +22,12 @@ class HTheQuerySet(models.QuerySet):
             query: The search term.
 
         Returns:
-            A QuerySet containing matching HTheItem objects.
+            A QuerySet containing matching MeteoItem objects.
         """
         lookup = (Q(location__icontains=query))  # Create a Q object for case-insensitive search
         return self.filter(lookup)  # Filter the QuerySet based on the lookup
 
-# Define a custom Manager for HTheItem
+# Define a custom Manager for MeteoItem
 class HTheManager(models.Manager):
     def get_queryset(self):
         """
@@ -37,20 +37,20 @@ class HTheManager(models.Manager):
 
     def search(self, query=None):
         """
-        Searches for HTheItem objects based on the query.
+        Searches for MeteoItem objects based on the query.
 
         Args:
             query: The search term.
 
         Returns:
-            A QuerySet containing matching HTheItem objects.
+            A QuerySet containing matching MeteoItem objects.
         """
         if query is None:
             return self.get_queryset().none()  # Return an empty QuerySet if no query is provided
         return self.get_queryset().search(query)  # Use the custom search method on the QuerySet
 
-# Define the HTheItem model
-class HTheItem(models.Model):
+# Define the MeteoItem model
+class MeteoItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL, related_name='hmeteo')
     """
     The user associated with this location.
@@ -83,7 +83,7 @@ class HTheItem(models.Model):
 
     def __str__(self):
         """
-        Returns a string representation of the HTheItem object.
+        Returns a string representation of the MeteoItem object.
         """
         return f"{self.slug} by {self.user}: '{self.location}' {self.lat}°, {self.lng}°"
 
@@ -229,7 +229,7 @@ class HTheItem(models.Model):
         Returns:
             A dictionary containing the maximum and minimum temperatures.
         """
-        max_of_max, min_of_min = HTheItem.compute_max_of_max_and_min_of_min()
+        max_of_max, min_of_min = MeteoItem.compute_max_of_max_and_min_of_min()
         context = {
             "max": max_of_max,
             "min": min_of_min

@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import TheItem
-from hmeteo.models import HTheItem
+from hmeteo.models import MeteoItem
 from .forms import ObjForm
 
 # Create your views here.
@@ -9,7 +9,7 @@ def home_page(request):
     context ={"title":'Home'}
     template="home.html"
     bqueryset=TheItem.objects.all().published()
-    hqueryset=HTheItem.objects.all()
+    hqueryset=MeteoItem.objects.all()
     context ={"object_list": bqueryset[:2], "meteo_list": hqueryset[:2]}
     return render(request,template, context)
 

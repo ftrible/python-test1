@@ -1,9 +1,9 @@
 import unittest
-from .models import HTheItem
+from .models import MeteoItem
 from django.urls import reverse
 from unittest.mock import patch
 from django.core.exceptions import ValidationError
-from .forms import HObjForm
+from .forms import MeteoForm
 from django.test import TestCase, Client
 from django.core.files.uploadedfile import SimpleUploadedFile
 import json
@@ -11,11 +11,11 @@ import json
 class MyModelTests(TestCase):
     def setUp(self):
         # Set up any required objects or state here
-        self.my_model = HTheItem.objects.create(location='whatever', lat='12.3',lng='12.3',slug='slug')
+        self.my_model = MeteoItem.objects.create(location='whatever', lat='12.3',lng='12.3',slug='slug')
 
     def tearDown(self):
         # Clean up after tests
-        HTheItem.objects.all().delete()
+        MeteoItem.objects.all().delete()
 
     def test_my_model_str(self):
         # Test __str__ method of MyModel
@@ -30,12 +30,12 @@ class MyViewTests(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.url = reverse('createwithobject')
-#        HTheItem.objects.create(location='whatever', lat='12.3',lng='12.3',slug='slug')
+        self.url = reverse('createwitHObject')
+#        MeteoItem.objects.create(location='whatever', lat='12.3',lng='12.3',slug='slug')
 
     def tearDown(self):
         # Clean up after tests
-        HTheItem.objects.all().delete()
+        MeteoItem.objects.all().delete()
 
     def test_my_view_get(self):
         response = self.client.get(self.url)
@@ -61,7 +61,7 @@ class MyViewTests(TestCase):
         print(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'message': 'Location created successfully'})
-        self.assertTrue(HTheItem.objects.filter(location='Test Location').exists())
+        self.assertTrue(MeteoItem.objects.filter(location='Test Location').exists())
 
     def test_my_view_post_invalid(self):
         # Send invalid data to trigger a 401 status code
@@ -79,26 +79,26 @@ class MyFormTests(TestCase):
     def test_my_form_valid(self):
         # Test valid form data
         form_data = {'location': 'value1', 'image': 'value2'}
-        form = HObjForm(data=form_data)
+        form = MeteoForm(data=form_data)
         self.assertTrue(form.is_valid())
 
     # def test_my_form_invalid(self):
     #     # Test invalid form data
     #     form_data = {'location': '', 'image': 'value2'}
-    #     form = HObjForm(data=form_data)
+    #     form = MeteoForm(data=form_data)
     #     self.assertFalse(form.is_valid())
    
     @patch('hmeteo.forms.OpenCageGeocode')
     def test_default_location(self, mock_geocode):
         form_data = {'image': 'test_image.jpg'}
-        form = HObjForm(data=form_data)
+        form = MeteoForm(data=form_data)
         self.assertEqual(form.data['location'], 'Default Location')
 
     @patch('hmeteo.forms.OpenCageGeocode')
     def test_geocode_single_result(self, mock_geocode):
         mock_geocode.return_value.geocode.return_value = [{'geometry': {'lat': 10.0, 'lng': 20.0}}]
         form_data = {'location': 'Test Location', 'image': 'test_image.jpg'}
-        form = HObjForm(data=form_data)
+        form = MeteoForm(data=form_data)
         form.is_valid()
         instance = form.save(commit=False)
         self.assertEqual(instance.lat, 10.0)
@@ -111,7 +111,7 @@ class MyFormTests(TestCase):
             {'geometry': {'lat': 30.0, 'lng': 40.0}}
         ]
         form_data = {'location': 'Test Location', 'image': 'test_image.jpg'}
-        form = HObjForm(data=form_data)
+        form = MeteoForm(data=form_data)
         form.is_valid()
         # Instead of expecting a ValidationError, we should check that the form is valid
         self.assertTrue(form.is_valid())
@@ -122,15 +122,15 @@ class MyFormTests(TestCase):
     def test_geocode_failure(self, mock_geocode):
         mock_geocode.return_value.geocode.return_value = []
         form_data = {'location': 'Invalid Location', 'image': 'test_image.jpg'}
-        form = HObjForm(data=form_data)
+        form = MeteoForm(data=form_data)
         form.is_valid()
         with self.assertRaises(ValidationError):
             form.save(commit=False)
 
-    @patch('hmeteo.forms.HTheItem')
+    @patch('hmeteo.forms.MeteoItem')
     def test_generate_unique_slug(self, mock_model):
         mock_model.objects.filter.return_value.exists.side_effect = [True, False]
-        slug = HObjForm.generate_unique_slug('Test Location')
+        slug = MeteoForm.generate_unique_slug('Test Location')
         self.assertEqual(slug, 'test-location_1')
 
 

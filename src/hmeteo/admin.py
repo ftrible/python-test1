@@ -1,5 +1,5 @@
 from django.contrib import admin
-from hmeteo.models import HTheItem
+from hmeteo.models import MeteoItem
 # Register your models here.
 
-admin.site.register(HTheItem)
+admin.site.register(MeteoItem)

@@ -4,7 +4,7 @@ from django.conf import settings
 urlpatterns = [
     path('hmeteo/', views.list, name='list'),
     path('hmeteo/geocode/', views.geocode, name='geocode'),
-    path('hmeteo/create/', views.createwithobject, name='createwithobject'),
+    path('hmeteo/create/', views.createwitHObject, name='createwitHObject'),
     path('hmeteo/update-location/', views.update_location, name='update_location'),
 #    path('search/', search_view, name='search'),
     path('hmeteo/<str:slug_id>/', views.detail, name='detail'),
