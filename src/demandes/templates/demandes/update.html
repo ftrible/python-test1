@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="POST" action="." enctype='multipart/form-data'> {% csrf_token %}
+    {{ form.as_p }}
+    <button class ="btn btn-primary" type="Submit">Change</button>
+</form>
+<!-- Include jQuery and jQuery UI from CDN -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    // Apply the datepicker to the input field with id 'id_publish_date'
+    $('#id_publish_date').datepicker({
+      dateFormat: 'yy-mm-dd' // Adjust the date format to match the format used in your Django model
+    });
+
+    // Event listener for Cancel button click
+    $('#cancel').click(function(){
+      window.history.back();
+    });
+  });
+</script>
+{% endblock %}

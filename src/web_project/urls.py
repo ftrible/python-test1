@@ -12,7 +12,7 @@ Class-based views
     2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+    2. Add a URL to urlpatterns:  path('my_app/', include('my_app.urls'))
 """
 from django.contrib import admin
 from django.urls import include, path,reverse_lazy
@@ -22,6 +22,7 @@ from userprofile.views import update
 urlpatterns = [
     path("", include("blog.urls")),
     path("", include("hmeteo.urls")),
+    path("", include("demandes.urls")),
     path('contact/', contact_page, name='contact'),
     path('login/', login_view, name='login'),
     path('forgot/',auth_views.PasswordResetView.as_view(template_name='simple.html',success_url=reverse_lazy('password_reset_done')),name='forgot'),

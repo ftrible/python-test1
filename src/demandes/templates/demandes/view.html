@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+{% if request.user.is_authenticated%}
+{% if request.user == demande.user%}
+<div class="col-12">
+<a href="{{demande.get_edit_url}}" class="btn btn-primary">Edit</a>
+<a href="{{demande.get_delete_url}}" class="btn btn-primary">Delete</a>
+</div>
+{% endif %}
+{% endif %}
+{% include 'demandes/list_inline.html' with item=demande detail=True %}
+
+{% endblock %}

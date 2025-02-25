@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog',
     'hmeteo',
+    'demandes',
     'searches',
     'userprofile',
+
 ]
 
 MIDDLEWARE = [

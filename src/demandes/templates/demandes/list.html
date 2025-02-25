@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+{% if request.user.is_anonymous %}
+{% else %}
+<a href="/demandes-new" class="card-link btn btn-primary">Add Demande</a>
+{% endif %}
+<H1>{{title}}</H1>
+<div class="row">
+{% for demande in object_list %}
+<div class='col-12 col-md-4 mx-auto'>
+{% include 'demandes/list_inline.html' with item=demande detail=False %}
+</div>
+{% endfor %}
+</div>
+{% endblock %}
