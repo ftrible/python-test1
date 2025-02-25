@@ -48,9 +48,11 @@ def createwithobject(request):
                 return JsonResponse({'message': 'Location created successfully'}, status=200)
 
             else:
-                return JsonResponse({'error': 'location_geo not provided'}, status=400)
+                print("missing location_geo")
+                return JsonResponse({'error': 'location_geo not provided'}, status=401)
         else:
-            return JsonResponse({'error': form.errors}, status=400)
+            print(form.errors)  # Print form errors for debugging
+            return JsonResponse({'error': form.errors}, status=402)
 
     else:
         # Handle other HTTP methods if needed
