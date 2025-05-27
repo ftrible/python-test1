@@ -5,11 +5,19 @@
     <div style="display: flex; align-items: right; gap: 16px;">
       {{ form.image.label_tag }}<br />
       {% if form.instance.image %}
-        <img id="image-preview" src="{{ form.instance.image.url }}" style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;" />
-      {% else %}
-        <img id="image-preview" style="max-width:200px; max-height:200px; display:none; margin-bottom:10px;" />
+        <img id="image-preview" src="{{ form.instance.image.url }}" 
+        style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;" />
+       <video id="webcam-video" width="320" height="240" autoplay style="display:none; border:1px solid #ccc; margin-top:10px;"></video>
+     {% else %}
+        <img id="image-preview" 
+        style="max-width:200px; max-height:200px; margin-bottom:10px;" />
+      <video id="webcam-video" width="320" height="240" autoplay style="display:none; border:1px solid #ccc; margin-top:10px;"></video>
       {% endif %}
-      <div>{{ form.image }}</div>
+      <div>{{ form.image }}<br/>
+      <button type="button" id="webcam-btn" class="btn btn-primary">Use webcam</button>
+      <button type="button" id="webcam-cancel" class="btn btn-secondary" style="display:none;">Cancel</button>
+      <canvas id="webcam-canvas" width="320" height="240" style="display:none;"></canvas>
+      </div>
     </div><br />
     {{ form.title.label_tag }} {{ form.title }}<br />
     {{ form.content.label_tag }} {{ form.content }}<br />
@@ -22,19 +30,163 @@
       {{ form.new_author_bio.label_tag }} {{ form.new_author_bio }}<br />
     </div>
     <button class="btn btn-primary" type="Submit">OK</button>
-    <button class="btn btn-primary" id="cancel">Cancel</button>
+    <button class="btn btn-secondary" id="cancel">Cancel</button>
   </form>
   <!-- Include jQuery and jQuery UI from CDN -->
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
   <script type="text/javascript">
+
+          // Function to handle Vision API response
+    function handleVisionApiSuccess(response) {
+      console.log('Vision API result:', response)
+      console.log('Detected text:', response.full_text)
+      if (response.raw.error) {
+        alert('Vision API error: ' + response.raw.error.message)
+        return
+      }
+      if (response.full_text === '') {
+        alert('No text detected in the image. Please try another image.')
+        return
+      }
+      var lines = response.full_text.split('\n').filter(Boolean)
+      console.log('lines:', lines)
+      var author = '';
+      var title = '';
+    // If line 0 has only one word, assume it's a first name and combine with line 1 for author
+      if (lines.length > 1 && lines[0].trim().split(/\s+/).length === 1) {
+          author = lines[0] + ' ' + lines[1];
+          title = lines[2] || '';
+      } else {
+          author = lines[0] || '';
+          title = lines[1] || '';
+      }
+      var query = ''
+      if (author && title) {
+        query = encodeURIComponent('intitle:"' + title + '" inauthor:"' + author + '"')
+      } else if (title) {
+        query = encodeURIComponent('intitle:"' + title + '"')
+      } else {
+        query = encodeURIComponent(lines.slice(0, 3).join(' '))
+      }
+      console.log('Search query:', query)
+      $.ajax({
+        url: 'https://www.googleapis.com/books/v1/volumes?q=' + query,
+        method: 'GET',
+        success: function (booksResponse) {
+          console.log('Google Books response:', booksResponse)
+          if (booksResponse.error) {
+            alert('Google Books API error: ' + booksResponse.error.message)
+            return
+          }
+          if (booksResponse.items && booksResponse.items.length > 0) {
+            console.log('Found books:', booksResponse.items)
+          } else {
+            console.log('Not found in Google Books Library, please fill in the details manually -', query)
+          }
+          console.log(booksResponse)
+          if (booksResponse.totalItems > 0) {
+            var book = booksResponse.items[0].volumeInfo
+            $('#id_title').val(book.title)
+            if (book.authors && book.authors.length > 0) {
+                var found = false;
+                $('#id_author option').each(function() {
+                  if ($(this).text().trim().toLowerCase() === book.authors[0].trim().toLowerCase()) {
+                    $(this).prop('selected', true);
+                    found = true;
+                    return false; // break loop
+                  }
+                });
+                // If found, hide the new author section
+                if (found) {
+                  $('#new-author-section').hide();
+                } else {
+                  $('#new-author-section').show();
+                  $('#id_new_author_name').val(book.authors[0])
+                }
+            }
+            if (book.publishedDate) {
+              $('#id_publish_date').val(book.publishedDate)
+            }
+            if (book.description) {
+              $('#id_content').val(book.description)
+            }
+          } else {
+            alert('Not found in Google Books Library, please fill in the details manually.')
+          }
+        },
+        error: function () {
+          alert('Error in Google Books search')
+        }
+      })
+    }
+
     $(document).ready(function () {
       // Cancel button handler
       $('#cancel').on('click', function (e) {
         e.preventDefault()
         window.history.back()
       })
+      
+      // Webcam management
+      var video = document.getElementById('webcam-video');
+      var canvas = document.getElementById('webcam-canvas');
+      var webcamStream = null;
+      $('#webcam-cancel').on('click', function (e) {
+        e.preventDefault()
+        $('#webcam-video').hide();
+        $('#image-preview').show();
+        $('#webcam-btn').text('Use webcam');
+        $('#webcam-cancel').hide();
+        if (webcamStream) {
+          webcamStream.getTracks().forEach(track => track.stop());
+          webcamStream = null;
+        }
+      })
+      
+
+    // Webcam button click handler
+      $('#webcam-btn').on('click', function () {
+          if (webcamStream) {
+            // Already streaming: take snapshot
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            var dataUrl = canvas.toDataURL('image/jpeg');
+            $('#image-preview').attr('src', dataUrl).show();
+            // Convert dataURL to Blob for FormData (if you want to upload as file)
+            // Or send to Vision API as base64:
+            var base64 = dataUrl.split(',')[1];
+            $.ajax({
+              url: '/vision-api/',
+              method: 'POST',
+              data: JSON.stringify({ image: base64 }),
+              contentType: 'application/json',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+              success: handleVisionApiSuccess
+            });
+            // Optionally, stop the webcam after capture
+            webcamStream.getTracks().forEach(track => track.stop());
+            webcamStream = null;
+            $('#webcam-video').hide();
+            $('#webcam-btn').text('Use webcam');
+            $('#webcam-cancel').hide();
+            $('#image-preview').show();
+          } else {
+            // Start webcam
+            navigator.mediaDevices.getUserMedia({ video: true })
+              .then(function (stream) {
+                webcamStream = stream;
+                video.srcObject = stream;
+                $('#webcam-video').show();
+                $('#webcam-btn').text('Take photo');
+                $('#webcam-cancel').show()
+                $('#image-preview').hide();
+              })
+              .catch(function (err) {
+                alert('Cannot access webcam (' + err+ ')');
+              });
+          }
+        });
       // Show/hide new author section based on dropdown
       var $authorSelect = $('#id_author')
       var $newAuthorSection = $('#new-author-section')
@@ -71,58 +223,7 @@
             data: JSON.stringify({ image: e.target.result.split(',')[1] }), // Remove data:image/...;base64,
             contentType: 'application/json',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-            success: function (response) {
-              console.log('Vision API result:', response)
-              console.log('Detected text:', response.full_text)
-              // You could auto-fill a form field, e.g.:
-              // $('#id_content').val(response.full_text);
-              if (response.raw.error) {
-                alert('Vision API error: ' + response.raw.error.message)
-              }
-              var lines = response.full_text.split('\n').filter(Boolean)
-              // Essayons d'utiliser les deux premières lignes comme auteur et titre
-              var author = lines[0] || ''
-              var title = lines[2] || lines[1] || ''
-              var query = ''
-    
-              // Construire la requête Google Books
-              if (author && title) {
-                query = encodeURIComponent('intitle:"' + title + '" inauthor:"' + author + '"')
-              } else if (title) {
-                query = encodeURIComponent('intitle:"' + title + '"')
-              } else {
-                query = encodeURIComponent(lines.slice(0, 3).join(' '))
-              }
-    
-              // Appel à l'API Google Books
-              $.ajax({
-                url: 'https://www.googleapis.com/books/v1/volumes?q=' + query,
-                method: 'GET',
-                success: function (booksResponse) {
-                  if (booksResponse.totalItems > 0) {
-                    var book = booksResponse.items[0].volumeInfo
-                    console.log('Livre trouvé:', book)
-                    //alert('Livre trouvé : ' + book.title + ' par ' + (book.authors ? book.authors.join(', ') : 'Auteur inconnu'));
-                    // Vous pouvez aussi pré-remplir les champs du formulaire ici
-                    $('#id_title').val(book.title)
-                    if (book.authors && book.authors.length > 0) {
-                      $('#id_new_author_name').val(book.authors[0])
-                    }
-                    if (book.publishedDate) {
-                      $('#id_publish_date').val(book.publishedDate)
-                    }
-                    if (book.description) {
-                      $('#id_content').val(book.description)
-                    }
-                  } else {
-                    alert('Aucun livre trouvé dans Google Books')
-                  }
-                },
-                error: function () {
-                  alert('Erreur lors de la recherche Google Books')
-                }
-              })
-            },
+            success: handleVisionApiSuccess,
             error: function (xhr, status, error) {
               alert('Vision API error: ' + error)
             }
