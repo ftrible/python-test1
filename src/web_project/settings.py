@@ -150,3 +150,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'myemail@gmail.com'
 #application validation code
 EMAIL_HOST_PASSWORD = 'abcd efgh ijkl mnop'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024 # 10 MB limit for file uploads

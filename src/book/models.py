@@ -5,10 +5,7 @@ from django.db.models import Q
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 class BookQuerySet(models.QuerySet):
-    def published(self):
-        now=timezone.now()
-        return self.filter(publish_date__lte=now)
-    def search(self, query):
+   def search(self, query):
         lookup=(Q(content__icontains=query) |
                 Q(title__icontains=query) |
                 Q(user__username__icontains=query))
@@ -17,12 +14,10 @@ class BookQuerySet(models.QuerySet):
 class BookManager(models.Manager):
     def get_queryset(self):
         return BookQuerySet(self.model, using=self._db)
-    def published(self):
-        return self.get_queryset().published()
     def search(self, query=None):
         if  query is None:
             return self.get_queryset().none()
-        return self.published().search(query)
+        return self.search(query)
 
 class Author(models.Model):
     name = models.CharField(max_length=100)
@@ -39,7 +34,7 @@ class BookItem(models.Model):
     title = models.CharField(max_length=144)
     slug = models.SlugField(unique=True)
     content = models.TextField(null=True, blank=True)
-    publish_date = models.DateTimeField(auto_now=False, auto_now_add=False, null=True, blank=True)
+    publish_date = models.SmallIntegerField(null=True, blank=True, help_text="Year of publication")
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     objects=BookManager()

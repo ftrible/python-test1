@@ -10,7 +10,7 @@ def home_page(request):
     context ={"title":'Home'}
     template="home.html"
     blqueryset=TheItem.objects.all().published()
-    boqueryset=BookItem.objects.all().published()
+    boqueryset=BookItem.objects.all()
     hqueryset=MeteoItem.objects.all()
     context ={"object_list": blqueryset[:2], "meteo_list": hqueryset[:2], "book_list": boqueryset[:2]}
     return render(request,template, context)

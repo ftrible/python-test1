@@ -2,6 +2,7 @@ from django.urls import path
 from book import views
 from searches.views import search_view
 from django.conf import settings
+from .views import vision_api
 urlpatterns = [
     path('book/', views.list, name='list'),
     path('book/<str:slug_id>/', views.detail, name='detail'),
@@ -13,7 +14,8 @@ urlpatterns = [
     path('authors/<int:pk>/', views.author_detail, name='author_detail'),
     path('authors/<int:pk>/edit/', views.author_update, name='author_update'),
     path('authors/<int:pk>/delete/', views.author_delete, name='author_delete'),
-]
+    path('vision-api/', vision_api, name='vision_api'),
+    ]
 # to find static and media files
 if settings.DEBUG:  
     from django.conf.urls.static import static

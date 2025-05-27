@@ -2,6 +2,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import BookItem, Author
 from .forms import BookForm, AuthorForm
+import requests
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import os
+import json
 
 # CRUD
 # GET : retrieve, list
@@ -28,11 +34,7 @@ def create(request):
 
 
 def list(request):
-#    now=timezone.now()
-    if (request.user.is_staff):
-        queryset=BookItem.objects.all()
-    else:
-        queryset=BookItem.objects.all().published()
+    queryset=BookItem.objects.all()
     template='book/list.html'
     context ={"title":'All Books', "object_list": queryset}
     return render(request,template, context)
@@ -103,3 +105,35 @@ def author_delete(request, pk):
         return redirect("author_list")
     return render(request, "book/author_confirm_delete.html", {"author": author})
 
+@csrf_exempt  # If you use AJAX with CSRF, you can remove this and use the CSRF token header
+@require_POST
+def vision_api(request):
+    data = json.loads(request.body)
+    image_base64 = data.get('image')
+    api_key = os.environ.get('GOOGLE_VISION_API_KEY')  # Set your API key as an environment variable
+
+    url = f'https://vision.googleapis.com/v1/images:annotate?key={api_key}'
+    payload = {
+        "requests": [{
+            "image": {"content": image_base64},
+            "features": [{"type": "TEXT_DETECTION"}]
+        }]
+    }
+    response = requests.post(url, json=payload)
+    result = response.json()
+
+    # Parse the main detected text
+    try:
+        annotations = result['responses'][0].get('textAnnotations', [])
+        full_text = annotations[0]['description'] if annotations else ''
+        # Optionally, get all lines/words as a list:
+        lines = [ann['description'] for ann in annotations[1:]] if len(annotations) > 1 else []
+    except (KeyError, IndexError):
+        full_text = ''
+        lines = []
+
+    return JsonResponse({
+        'full_text': full_text,
+        'lines': lines,
+        'raw': result  # Optionally include the raw response for debugging
+    })

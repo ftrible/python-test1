@@ -1,48 +1,139 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<form method="POST" action="book-new" enctype="multipart/form-data"> {% csrf_token %}
-  {{ form.image.label_tag }} {{ form.image }}<br>
-  {{ form.title.label_tag }} {{ form.title }}<br>
-  {{ form.content.label_tag }} {{ form.content }}<br>
-  {{ form.publish_date.label_tag }} {{ form.publish_date }}<br>
-  {{ form.author.label_tag }} 
-  {{ form.author }}<br>
-  <div id="new-author-section">
-    <p>Or create a new author:</p>
-    {{ form.new_author_name.label_tag }} {{ form.new_author_name }}<br>
-    {{ form.new_author_bio.label_tag }} {{ form.new_author_bio }}<br>
-  </div>
-  <button class ="btn btn-primary" type="Submit">OK</button>
-  <button class ="btn btn-primary" id="cancel">Cancel</button>
-</form>
-<!-- Include jQuery and jQuery UI from CDN -->
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <form method="POST" action="book-new" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="display: flex; align-items: right; gap: 16px;">
+      {{ form.image.label_tag }}<br />
+      {% if form.instance.image %}
+        <img id="image-preview" src="{{ form.instance.image.url }}" style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;" />
+      {% else %}
+        <img id="image-preview" style="max-width:200px; max-height:200px; display:none; margin-bottom:10px;" />
+      {% endif %}
+      <div>{{ form.image }}</div>
+    </div><br />
+    {{ form.title.label_tag }} {{ form.title }}<br />
+    {{ form.content.label_tag }} {{ form.content }}<br />
+    {{ form.publish_date.label_tag }} {{ form.publish_date }}<br />
+    {{ form.author.label_tag }}
+    {{ form.author }}<br />
+    <div id="new-author-section">
+      <p>Or create a new author:</p>
+      {{ form.new_author_name.label_tag }} {{ form.new_author_name }}<br />
+      {{ form.new_author_bio.label_tag }} {{ form.new_author_bio }}<br />
+    </div>
+    <button class="btn btn-primary" type="Submit">OK</button>
+    <button class="btn btn-primary" id="cancel">Cancel</button>
+  </form>
+  <!-- Include jQuery and jQuery UI from CDN -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
-<script type="text/javascript">
-  $(document).ready(function(){
-    // Apply the datepicker to the input field with id 'id_publish_date'
-    $('#id_publish_date').datepicker({
-      dateFormat: 'yy-mm-dd' // Adjust the date format to match the format used in your Django model
-    });
-
-// Cancel button handler
-    $('#cancel').on('click', function(e){
-      e.preventDefault();
-      window.history.back();
-    });
-    // Show/hide new author section based on dropdown
-    var $authorSelect = $('#id_author');
-    var $newAuthorSection = $('#new-author-section');
-    function toggleNewAuthorSection() {
-      if ($authorSelect.val()) {
-        $newAuthorSection.hide();
-      } else {
-        $newAuthorSection.show();
+  <script type="text/javascript">
+    $(document).ready(function () {
+      // Cancel button handler
+      $('#cancel').on('click', function (e) {
+        e.preventDefault()
+        window.history.back()
+      })
+      // Show/hide new author section based on dropdown
+      var $authorSelect = $('#id_author')
+      var $newAuthorSection = $('#new-author-section')
+      function toggleNewAuthorSection() {
+        if ($authorSelect.val()) {
+          $newAuthorSection.hide()
+        } else {
+          $newAuthorSection.show()
+        }
       }
-   }
-    $authorSelect.on('change', toggleNewAuthorSection);
-    toggleNewAuthorSection(); // Initial call to set visibility based on initial value
-  });
-</script>
+      $authorSelect.on('change', toggleNewAuthorSection)
+      toggleNewAuthorSection() // Initial call to set visibility based on initial value
+    })
+    // Step 1: Catch the cover image selection event
+    // Catch the cover image selection event
+    $('#id_image').on('change', function (event) {
+      var file = event.target.files[0]
+      if (file) {
+        if (file.size > 8 * 1024 * 1024) {
+          // 8 Mo max par exemple
+          alert("L'image est trop volumineuse !")
+          return
+        }
+        // For demonstration, show a preview (optional)
+        var reader = new FileReader()
+        reader.onload = function (e) {
+          // You can create an <img id="image-preview"> in your form to show this
+          $('#image-preview').attr('src', e.target.result).show()
+          // Step 2: Use Google Cloud Vision API to extract text (title, author, ISBN) from the cover image.
+          // Send base64 image to backend
+          $.ajax({
+            url: '/vision-api/', // You will create this endpoint
+            method: 'POST',
+            data: JSON.stringify({ image: e.target.result.split(',')[1] }), // Remove data:image/...;base64,
+            contentType: 'application/json',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function (response) {
+              console.log('Vision API result:', response)
+              console.log('Detected text:', response.full_text)
+              // You could auto-fill a form field, e.g.:
+              // $('#id_content').val(response.full_text);
+              if (response.raw.error) {
+                alert('Vision API error: ' + response.raw.error.message)
+              }
+              var lines = response.full_text.split('\n').filter(Boolean)
+              // Essayons d'utiliser les deux premières lignes comme auteur et titre
+              var author = lines[0] || ''
+              var title = lines[2] || lines[1] || ''
+              var query = ''
+    
+              // Construire la requête Google Books
+              if (author && title) {
+                query = encodeURIComponent('intitle:"' + title + '" inauthor:"' + author + '"')
+              } else if (title) {
+                query = encodeURIComponent('intitle:"' + title + '"')
+              } else {
+                query = encodeURIComponent(lines.slice(0, 3).join(' '))
+              }
+    
+              // Appel à l'API Google Books
+              $.ajax({
+                url: 'https://www.googleapis.com/books/v1/volumes?q=' + query,
+                method: 'GET',
+                success: function (booksResponse) {
+                  if (booksResponse.totalItems > 0) {
+                    var book = booksResponse.items[0].volumeInfo
+                    console.log('Livre trouvé:', book)
+                    //alert('Livre trouvé : ' + book.title + ' par ' + (book.authors ? book.authors.join(', ') : 'Auteur inconnu'));
+                    // Vous pouvez aussi pré-remplir les champs du formulaire ici
+                    $('#id_title').val(book.title)
+                    if (book.authors && book.authors.length > 0) {
+                      $('#id_new_author_name').val(book.authors[0])
+                    }
+                    if (book.publishedDate) {
+                      $('#id_publish_date').val(book.publishedDate)
+                    }
+                    if (book.description) {
+                      $('#id_content').val(book.description)
+                    }
+                  } else {
+                    alert('Aucun livre trouvé dans Google Books')
+                  }
+                },
+                error: function () {
+                  alert('Erreur lors de la recherche Google Books')
+                }
+              })
+            },
+            error: function (xhr, status, error) {
+              alert('Vision API error: ' + error)
+            }
+          })
+        }
+        reader.readAsDataURL(file)
+    
+        // You can now process the file variable as needed
+        console.log('Image selected:', file.name)
+      }
+    })
+    // Step 3: Use the extracted text to search book databases like Google Books API or Open Library API.
+  </script>
 {% endblock %}
