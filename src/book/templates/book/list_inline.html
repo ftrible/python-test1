@@ -1,0 +1,23 @@
+
+<div class="card">
+    <div class="card-header">from {{item.user}}</div>
+    <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
+        {% if item.image %}
+            <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid"/>
+        {% endif%}
+        <h5 class="card-title">{{item.title}}</h5>
+        <small class="text-muted">{{item.publish_date}} </small>
+        {% if detail%}
+        <p class="card-text">{{item.content|linebreaks}}</p>
+        {% else%}
+        <p class="card-text">{{item.content|linebreaks|truncatewords:30}}</p>
+        <a class="card-link btn btn-primary" href="{{item.get_absolute_url}}">View</a>
+        {% if request.user == book.user%}
+        <a href="{{book.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
+        <a href="{{book.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
+        {% endif %}
+        {% endif%}
+        {% if not item.publish_date %} Draft {% endif %}
+    </div>
+
+</div>

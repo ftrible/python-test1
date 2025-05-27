@@ -41,13 +41,13 @@
 <div class="row position-relative">
     <div class="col-12">
         <div class="row justify-content-start">
-            {% for post in object_list %}
+            {% for book in book_list %}
             <div class='col-12 col-md-4'>
-                {% include 'blog/list_inline.html' with item=post detail=False %}
+                {% include 'book/list_inline.html' with item=book detail=False %}
             </div>
             {% endfor %}
         </div>
-        <a href='blog' class="btn btn-primary more-btn">More</a>
+        <a href='book' class="btn btn-primary more-btn">More</a>
     </div>
 </div>
 <HR>

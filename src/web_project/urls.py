@@ -21,6 +21,7 @@ from django.contrib.auth import views as auth_views
 from userprofile.views import update
 urlpatterns = [
     path("", include("blog.urls")),
+    path("", include("book.urls")),
     path("", include("hmeteo.urls")),
     path("", include("demandes.urls")),
     path('contact/', contact_page, name='contact'),

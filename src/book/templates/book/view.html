@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+{% if request.user.is_authenticated%}
+{% if request.user == book.user%}
+<div class="col-12">
+<a href="{{book.get_edit_url}}" class="btn btn-primary">Edit</a>
+<a href="{{book.get_delete_url}}" class="btn btn-primary">Delete</a>
+</div>
+{% endif %}
+{% endif %}
+{% include 'book/list_inline.html' with item=book detail=True %}
+
+{% endblock %}
