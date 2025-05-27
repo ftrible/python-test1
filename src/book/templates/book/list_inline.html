@@ -12,7 +12,7 @@
         {% else%}
         <p class="card-text">{{item.content|linebreaks|truncatewords:30}}</p>
         <a class="card-link btn btn-primary" href="{{item.get_absolute_url}}">View</a>
-        {% if request.user == book.user%}
+        {% if request.user == item.user%}
         <a href="{{book.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
         <a href="{{book.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
         {% endif %}
