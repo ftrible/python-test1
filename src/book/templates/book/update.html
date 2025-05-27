@@ -1,8 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-<form method="POST" action="." enctype='multipart/form-data'> {% csrf_token %}
-    {{ form.as_p }}
-    <button class ="btn btn-primary" type="Submit">Change</button>
+<form method="POST" action="." enctype="multipart/form-data"> {% csrf_token %}
+  <div style="display: flex; align-items: right; gap: 16px;">
+  {{ form.image.label_tag }}<br>
+   {% if form.instance.image %}
+      <img id="image-preview" src="{{ form.instance.image.url }}" style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;">
+    {% else %}
+      <img id="image-preview" style="max-width:200px; max-height:200px; display:none; margin-bottom:10px;">
+    {% endif %}
+    <div>
+      {{ form.image }}
+    </div>
+  </div>
+  <br>
+  {{ form.title.label_tag }} {{ form.title }}<br>
+  {{ form.content.label_tag }} {{ form.content }}<br>
+  {{ form.publish_date.label_tag }} {{ form.publish_date }}<br>
+  {{ form.author.label_tag }} 
+  {{ form.author }}<br>
+  <div id="new-author-section">
+    <p>Or create a new author:</p>
+    {{ form.new_author_name.label_tag }} {{ form.new_author_name }}<br>
+    {{ form.new_author_bio.label_tag }} {{ form.new_author_bio }}<br>
+  </div>
+  <button class ="btn btn-primary" type="Submit">OK</button>
+  <button class ="btn btn-primary" id="cancel">Cancel</button>
 </form>
 <!-- Include jQuery and jQuery UI from CDN -->
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -15,10 +37,23 @@
       dateFormat: 'yy-mm-dd' // Adjust the date format to match the format used in your Django model
     });
 
-    // Event listener for Cancel button click
-    $('#cancel').click(function(){
+// Cancel button handler
+    $('#cancel').on('click', function(e){
+      e.preventDefault();
       window.history.back();
     });
+// Show/hide new author section based on dropdown
+    var $authorSelect = $('#id_author');
+    var $newAuthorSection = $('#new-author-section');
+    function toggleNewAuthorSection() {
+      if ($authorSelect.val()) {
+        $newAuthorSection.hide();
+      } else {
+        $newAuthorSection.show();
+      }
+   }
+    $authorSelect.on('change', toggleNewAuthorSection);
+    toggleNewAuthorSection(); // Initial call to set visibility based on initial value
   });
 </script>
 {% endblock %}

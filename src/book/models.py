@@ -23,10 +23,19 @@ class BookManager(models.Manager):
         if  query is None:
             return self.get_queryset().none()
         return self.published().search(query)
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    bio = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return self.name
+    def get_absolute_url(self):
+        return f"/authors/{self.pk}/"    
     
 class BookItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='book')
-    image = models.ImageField(upload_to="image/", blank=True, null=True)
+    author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name='books')
+    image = models.ImageField(upload_to="image/", blank=True, null=True,)
     title = models.CharField(max_length=144)
     slug = models.SlugField(unique=True)
     content = models.TextField(null=True, blank=True)
