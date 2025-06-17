@@ -5,11 +5,43 @@
 <a href="/book-new" class="card-link btn btn-primary">Add Book</a>
 {% endif %}
 <H1>{{title}}</H1>
-<div class="row">
-{% for book in object_list %}
-<div class='col-12 col-md-3 mx-auto'>
-{% include 'book/list_inline.html' with item=book detail=False %}
+<div style="display: flex; gap: 2rem;">
+  <!-- Left: List of titles -->
+  <div style="min-width: 400px;">
+    <ul class="list-group">
+      {% for item in object_list %}
+        <li class="list-group-item book-title" data-book-id="{{ item.id }}" style="cursor:pointer;">
+          {{ item.title }}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Right: Detail panel -->
+  <div id="book-detail" style="flex:1;">
+    <!-- The full card will be loaded here via AJAX or shown here if you render the first book by default -->
+    <p>Select a title to see details.</p>
+  </div>
+  <div id="book-detail-cards">
+  {% for book in object_list %}
+    <div class="book-card-detail" id="book-detail-{{ book.id }}" style="display:none;">
+       {% include 'book/list_inline.html' with item=book detail=False %}
+    </div>
+  {% endfor %}
 </div>
-{% endfor %}
 </div>
+<script>
+var selectedBookId = null;
+$(document).ready(function(){
+  $('.book-title').on('click', function(){
+    if (selectedBookId) {
+      $('#book-detail-' + selectedBookId).hide();
+    }
+    var bookId = $(this).data('book-id');
+    selectedBookId = $(this).data('book-id');
+    $('#book-detail').hide();
+    $('#book-detail-' + bookId).show();
+  });
+});
+</script>
 {% endblock %}

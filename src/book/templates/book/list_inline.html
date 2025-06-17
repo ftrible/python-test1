@@ -9,7 +9,7 @@
   </div>
   <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
     {% if item.image %}
-      <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid" />
+      <img src="{{ item.image.url }}" class="w-25 card-img-top img-thumbnail img-fluid" />
     {% endif %}
     <h5 class="card-title">{{ item.author }}</h5>
     {% if detail %}
