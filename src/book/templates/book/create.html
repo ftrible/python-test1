@@ -54,7 +54,7 @@
       console.log('lines:', lines)
       var author = '';
       var title = '';
-    // If line 0 has only one word, assume it's a first name and combine with line 1 for author
+     // If line 0 has only one word, assume it's a first name and combine with line 1 for author
       if (lines.length > 1 && lines[0].trim().split(/\s+/).length === 1) {
           author = lines[0] + ' ' + lines[1];
           title = lines[2] || '';
@@ -70,6 +70,7 @@
       } else {
         query = encodeURIComponent(lines.slice(0, 3).join(' '))
       }
+      //query = encodeURIComponent(response.full_text.trim())
       console.log('Search query:', query)
       $.ajax({
         url: 'https://www.googleapis.com/books/v1/volumes?q=' + query,
@@ -107,7 +108,13 @@
                 }
             }
             if (book.publishedDate) {
-              $('#id_publish_date').val(book.publishedDate)
+              // Extract the year (first 4 digits)
+              var yearMatch = book.publishedDate.match(/\d{4}/);
+              if (yearMatch) {
+                $('#id_publish_date').val(yearMatch[0]);
+              }
+            } else {
+              $('#id_publish_date').val('')
             }
             if (book.description) {
               $('#id_content').val(book.description)
@@ -144,7 +151,14 @@
           webcamStream = null;
         }
       })
-      
+      function dataURLtoFile(dataurl, filename) {
+          var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+              bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+          while(n--){
+              u8arr[n] = bstr.charCodeAt(n);
+          }
+          return new File([u8arr], filename, {type:mime});
+      }
 
     // Webcam button click handler
       $('#webcam-btn').on('click', function () {
@@ -153,7 +167,12 @@
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             var dataUrl = canvas.toDataURL('image/jpeg');
             $('#image-preview').attr('src', dataUrl).show();
-            // Convert dataURL to Blob for FormData (if you want to upload as file)
+            var uniqueFilename = 'webcam_' + Date.now() + '_' + Math.floor(Math.random() * 1000) + '.jpg';
+            // Convert dataURL to File and assign to file input
+            var file = dataURLtoFile(dataUrl, uniqueFilename);
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            $('#id_image')[0].files = dt.files;
             // Or send to Vision API as base64:
             var base64 = dataUrl.split(',')[1];
             $.ajax({
@@ -213,7 +232,7 @@
         // For demonstration, show a preview (optional)
         var reader = new FileReader()
         reader.onload = function (e) {
-          // You can create an <img id="image-preview"> in your form to show this
+          // Show preview
           $('#image-preview').attr('src', e.target.result).show()
           // Step 2: Use Google Cloud Vision API to extract text (title, author, ISBN) from the cover image.
           // Send base64 image to backend
