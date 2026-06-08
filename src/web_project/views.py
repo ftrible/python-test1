@@ -16,15 +16,15 @@ def about_page(request):
     global model, tokenizer
     context ={"title":'About'}
     template="about.html"
-    if model is None or tokenizer is None:
-        access_token = os.environ.get('HF_TOKEN') 
-        model_name = "utter-project/EuroLLM-9B-Instruct"
-        model_name = "utter-project/EuroLLM-1.7B"
-        tokenizer = AutoTokenizer.from_pretrained(model_name, access=access_token)
-        model = AutoModelForCausalLM.from_pretrained(model_name)
-    inputs = tokenizer("Explique-moi ce qu'est un LLM en français simple", return_tensors="pt")
-    outputs = model.generate(**inputs, max_length=200)
-    print(tokenizer.decode(outputs[0]))
+#    if model is None or tokenizer is None:
+#        access_token = os.environ.get('HF_TOKEN') 
+#        model_name = "utter-project/EuroLLM-9B-Instruct"
+#        model_name = "utter-project/EuroLLM-1.7B"
+#        tokenizer = AutoTokenizer.from_pretrained(model_name, access=access_token)
+#        model = AutoModelForCausalLM.from_pretrained(model_name)
+#    inputs = tokenizer("Explique-moi ce qu'est un LLM en français simple", return_tensors="pt")
+#    outputs = model.generate(**inputs, max_length=200)
+#    print(tokenizer.decode(outputs[0]))
     return render(request,template, context)                                                                   
 
 def logout_view(request):     

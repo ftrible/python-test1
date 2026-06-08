@@ -1,38 +1,52 @@
 {% extends "base.html" %}
-    {% block title %}
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-   {% endblock %}
+{% block title %}
+<title>{{title}}</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+{% endblock %}
 {% block content %}
 {% if request.user.is_anonymous %}
 {% else %}
-<a href="/hmeteo-new" class="card-link btn btn-primary">Add Location</a>
+<!-- Button moved to map overlay -->
 {% endif %}
 <div class="row">
-<div class="card col-12 col-md-4 mx-auto">
-  <div class="card-header">World</div>
-    <div class="card-body" id="map" style="height: 280px;"></div>
-</div>
-<script>
-  // Initialize the map
-  var map = L.map('map').setView([0, 0], 1); // Centered on (0, 0) with zoom level 1
+  <div class="card col-12 col-md-4 mx-auto">
+    <div class="card-header">World</div>
+    <div class="card-body position-relative p-0">
+      <div id="map" style="height: 280px;"></div>
+      {% if not request.user.is_anonymous %}
+      <a href="/hmeteo-new"
+        class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center"
+        style="position: absolute; bottom: 20px; left: 20px; z-index: 1000; width: 45px; height: 45px;"
+        title="Add Location">
+        <i class="bi bi-plus-lg" style="font-size: 1.5rem;"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([0, 0], 1); // Centered on (0, 0) with zoom level 1
 
-  // Add a tile layer from OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+    // Add a tile layer from OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-  // Loop through your objects and add markers
+    // Loop through your objects and add markers
+    {% for obj in object_list %}
+    {% if obj.lat and obj.lng %}
+    // DO NOT ADD SPACE BETWEEN THE CURLY BRACKETS BELOW - ignore syntax error
+    var marker = L.marker([{{ obj.lat }} ,
+    {{ obj.lng }} ]).addTo(map); // DO NOT CHANGE THIS LINE
+    marker.bindPopup("{{ obj.location|escapejs }}"); // Adjust the popup content as needed
+    {% endif %}
+    {% endfor %}
+  </script>
   {% for obj in object_list %}
-    var marker = L.marker([{{ obj.lat }}, {{ obj.lng }}]).addTo(map);
-    marker.bindPopup("{{ obj.location }}"); // Adjust the popup content as needed
+  <div class='col-12 col-md-4 mx-auto'>
+    {% include 'hmeteo/list_inline.html' with item=obj detail=False %}
+  </div>
   {% endfor %}
-</script>
-{% for obj in object_list %}
-<div class='col-12 col-md-4 mx-auto'>
-{% include 'hmeteo/list_inline.html' with item=obj detail=False %}
-</div>
-{% endfor %}
 </div>
 {% endblock %}

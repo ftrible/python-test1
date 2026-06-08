@@ -2,27 +2,30 @@
   <div class="card-header">
     {{ item.title }}
     {% if item.publish_date %}
-      <small class="text-muted">({{ item.publish_date}})</small>
+    <small class="text-muted">({{ item.publish_date}})</small>
     {% else %}
 
     {% endif %}
   </div>
   <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
     {% if item.image %}
-      <img src="{{ item.image.url }}" class="w-25 card-img-top img-thumbnail img-fluid" />
+    <img src="{{ item.image.url }}" class="w-25 img-thumbnail img-fluid float-start me-3" />
     {% endif %}
     <h5 class="card-title">{{ item.author }}</h5>
     {% if detail %}
-      <p class="card-text">{{ item.content|linebreaks }}</p>
+    <p class="card-text">{{ item.content|linebreaks }}</p>
     {% else %}
-      <small class="card-text">{{ item.content|linebreaks }}</small>
-      <a class="card-link btn btn-primary" href="{{ item.get_absolute_url }}">View</a>
-      {% if request.user == item.user %}
-        <a href="{{ book.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
-        <a href="{{ book.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
-      {% else %}
-        <p class="card-text">Added by {{ item.user }}</p>
-      {% endif %}
+    <div class="card-text">
+      {{ item.content|truncatewords:30|linebreaks }}
+    </div>
+    <a class="card-link btn btn-primary" href="{{ item.get_absolute_url }}">View</a>
+    {% if request.user == item.user %}
+    <a href="{{ book.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
+    <a href="{{ book.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
+    {% else %}
+    <p class="card-text mt-2"><small class="text-muted">Added by {{ item.user }}</small></p>
     {% endif %}
+    {% endif %}
+    <div class="clearfix"></div>
   </div>
 </div>
