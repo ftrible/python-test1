@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError  # Import validation error ha
 import pandas as pd  # Import pandas for data manipulation
 from userprofile.models import UserProfile  # Import UserProfile model
 import requests
+import os
 # Create your models here.
 User = settings.AUTH_USER_MODEL  # Get the User model from settings
 
@@ -104,19 +105,37 @@ class MeteoItem(models.Model):
     def get_windy_webcam_image(self):
         if (self.webcam_image is not None):
             return self.webcam_image
-        windykey="FLGHmea20gemHtaSa56lyD6OGkiCnwBc"
-        url = f"https://api.windy.com/webcams/api/v3/webcams?offset=0&nearby={self.lat},{self.lng},10&include=images"
-        headers = {
-            "x-windy-api-key": windykey
-        }
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        if data['webcams'][0]:
-#            webcam_id = data['webcams'][0]['webcamId']
-            self.webcam_image=data['webcams'][0]['images']['current']['preview']
-            return self.webcam_image
-        print("Error fetching webcam image")
-        return None
+        windykey = os.environ.get('WINDY_API_KEY')
+        if not windykey:
+            print("WINDY_API_KEY not set in environment variables")
+            return None
+        try:
+            url = f"https://api.windy.com/webcams/api/v3/webcams?offset=0&nearby={self.lat},{self.lng},10&include=images"
+            headers = {
+                "x-windy-api-key": windykey
+            }
+            response = requests.get(url, headers=headers, timeout=5)
+            response.raise_for_status()  # Raise an error for bad status codes
+            data = response.json()
+            
+            # Check if webcams list is not empty
+            if not data.get('webcams') or len(data['webcams']) == 0:
+                print(f"No webcams found for location: {self.location} ({self.lat}, {self.lng})")
+                return None
+            
+            webcam = data['webcams'][0]
+            if 'images' in webcam and 'current' in webcam['images'] and 'preview' in webcam['images']['current']:
+                self.webcam_image = webcam['images']['current']['preview']
+                return self.webcam_image
+            else:
+                print(f"Webcam found but no preview image available for {self.location}")
+                return None
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching webcam image for {self.location}: {str(e)}")
+            return None
+        except (KeyError, TypeError) as e:
+            print(f"Error parsing webcam data for {self.location}: {str(e)}")
+            return None
     def get_absolute_url(self):
         """
         Returns the absolute URL for the location detail view.

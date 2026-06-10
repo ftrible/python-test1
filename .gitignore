@@ -7,3 +7,4 @@ static_cdn_test
 .cache.sqlite
 src/http_cache.sqlite
 src/.cache.sqlite
+.env

@@ -9,6 +9,7 @@ from django.http import JsonResponse
 # https://opencagedata.com/tutorials/geocode-in-python
 from opencage.geocoder import OpenCageGeocode
 import json
+import os
 
 # CRUD
 # GET : retrieve, list
@@ -64,7 +65,10 @@ def geocode(request):
     data_dict = json.loads(json_data)
     location_name = data_dict.get('location_name')
     print(location_name)
-    OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
+    api_key = os.environ.get('OPENCAGE_API_KEY')
+    if not api_key:
+        return JsonResponse({'error': 'OpenCage API key not configured'}, status=500)
+    OCG = OpenCageGeocode(api_key)
     results = OCG.geocode(location_name)
     for town in results:
         print(town['components']['country'])

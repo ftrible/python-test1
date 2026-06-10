@@ -2,6 +2,7 @@ from django import forms
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from .models import MeteoItem
+import os
 # https://opencagedata.com/dashboard#geocoding
 # See full Python tutorial:
 # https://opencagedata.com/tutorials/geocode-in-python
@@ -21,7 +22,10 @@ class MeteoForm(forms.ModelForm):
         instance = super(MeteoForm, self).save(commit=False)
         # Get latitude and longitude from OpenCageGeocode API
         location_name = self.cleaned_data['location']
-        OCG = OpenCageGeocode('e3dd0f92c031405abba83cfeefbacd4e')
+        api_key = os.environ.get('OPENCAGE_API_KEY')
+        if not api_key:
+            raise ValidationError('OpenCage API key not configured')
+        OCG = OpenCageGeocode(api_key)
         results = OCG.geocode(location_name)
         if len(results) > 1:
             # Show a dialog to select the desired location

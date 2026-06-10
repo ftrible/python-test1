@@ -3,6 +3,9 @@
 import os
 import sys
 
+# Load environment variables from .env file
+from web_project.env_loader import load_env
+load_env()
 
 def main():
     """Run administrative tasks."""
