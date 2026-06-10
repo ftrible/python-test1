@@ -34,6 +34,8 @@
         }
 
         .card-actions {
+            position: relative;
+            z-index: 2;
             display: flex;
             gap: 0.5rem;
         }
@@ -50,6 +52,10 @@
 
         .card-actions .btn i {
             font-size: 1rem;
+        }
+
+        .card a.stretched-link {
+            z-index: 1;
         }
     </style>
     <style>
