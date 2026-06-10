@@ -17,7 +17,7 @@ class BookManager(models.Manager):
     def search(self, query=None):
         if  query is None:
             return self.get_queryset().none()
-        return self.search(query)
+        return self.get_queryset().search(query)
 
 class Author(models.Model):
     name = models.CharField(max_length=100)

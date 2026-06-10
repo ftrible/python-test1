@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card position-relative">
   <div class="card-header">
     {{ item.title }}
     {% if item.publish_date %}
@@ -18,10 +18,10 @@
     <div class="card-text">
       {{ item.content|truncatewords:30|linebreaks }}
     </div>
-    <a class="card-link btn btn-primary" href="{{ item.get_absolute_url }}">View</a>
+    <a class="stretched-link" href="{{ item.get_absolute_url }}" aria-label="View {{ item.title }}"></a>
     {% if request.user == item.user %}
-    <a href="{{ book.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
-    <a href="{{ book.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
+    <a href="{{ item.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
+    <a href="{{ item.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
     {% else %}
     <p class="card-text mt-2"><small class="text-muted">Added by {{ item.user }}</small></p>
     {% endif %}

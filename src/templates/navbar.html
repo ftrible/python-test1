@@ -6,7 +6,7 @@
   </button>
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto ">
+    <ul class="navbar-nav me-auto">
       <li class="nav-item">
         <a class="nav-link" href="/hmeteo">All Meteos</a>
       </li>
@@ -33,14 +33,20 @@
       </li>
       {% endif %}
     </ul>
-    {% if user.is_authenticated %}
-    <form class="form-inline my-2 my-lg-0" action="/search/">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-    </form>
+    <div class="d-flex align-items-center ms-auto gap-2">
+      {% if user.is_authenticated %}
+      <form class="d-flex" action="/search/">
+        <button class="btn btn-outline-success btn-sm" type="submit">Search</button>
+      </form>
+      <a class="nav-link text-white me-2" href="{% url 'userprofile' %}"><i class="bi bi-person"></i>{{ user.username }}</a>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+      </form>
+      {% else %}
+      <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}"><i class="bi bi-person"></i>Login</a>
+      {% endif %}
+    </div>
   </div>
-  <a class="nav-link ml-auto me-3" href='/userprofile'><i class="bi bi-person"></i>{{user.username}} </a>
-  {% else %}
-  <div class="navbar-text"><a href='/login/'><i class="bi bi-person"></i>Login</a></div>
-  {% endif%}
 
 </nav>

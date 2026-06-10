@@ -10,12 +10,12 @@
    {% if query %}
    <div class="row">
         <p class="lead">You searched for {{query}}</p>
-        {% if not blog_list %}
-        No Blog Found
+        {% if not book_list %}
+        No Book Found
         {% endif %}   
-        {% for post in blog_list %}
+        {% for book in book_list %}
         <div class='col-12 col-md-4 mx-auto'>
-             {% include 'blog/list_inline.html' with item=post detail=False %}
+             {% include 'book/list_inline.html' with item=book detail=False %}
              </div>
         {% endfor %}
         {% if not meteo_list %}
