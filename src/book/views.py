@@ -55,7 +55,11 @@ def update(request,slug_id):
     if form.is_valid():
         form.save()
         return redirect("/book")
-    context ={"title": f'Update {pobj.title}', "form": form}
+    context ={
+        "title": f'Update {pobj.title}',
+        "form": form,
+        "is_preferred": pobj.is_preferred_by(request.user),
+    }
     template="book/update.html"
     return render(request,template, context)
 
@@ -68,6 +72,20 @@ def delete(request,slug_id):
     context ={"title":'Book Delete', "book": pobj}
     template="book/delete.html"
     return render(request,template, context)
+
+@login_required(login_url='/login')
+def toggle_preferred(request,slug_id):
+    pobj = get_object_or_404(BookItem,slug=slug_id)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if pobj.preferred_by.filter(pk=request.user.pk).exists():
+        pobj.preferred_by.remove(request.user)
+        preferred = False
+    else:
+        pobj.preferred_by.add(request.user)
+        preferred = True
+    return JsonResponse({'preferred': preferred})
+
 
 def author_list(request):
     authors = Author.objects.all()

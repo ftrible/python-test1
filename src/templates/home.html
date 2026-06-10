@@ -70,7 +70,7 @@
 <!-- Books Section -->
 <div id="books-section" class="mb-5">
     <div class="section-header">
-        <h2 class="section-title">Latest Books</h2>
+        <h2 class="section-title">{% if preferred_book_exists %}Preferred Books{% else %}Latest Books{% endif %}</h2>
         <a href="book" class="view-all-btn">View All Books <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -87,7 +87,7 @@
 <!-- Meteo Section -->
 <div class="mb-5">
     <div class="section-header">
-        <h2 class="section-title">Weather Updates</h2>
+        <h2 class="section-title">{% if preferred_meteo_exists %}Preferred Weather{% else %}Weather Updates{% endif %}</h2>
         <a href="hmeteo" class="view-all-btn">View All Forecasts <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-4">

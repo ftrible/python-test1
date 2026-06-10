@@ -52,6 +52,7 @@ class HTheManager(models.Manager):
 # Define the MeteoItem model
 class MeteoItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL, related_name='hmeteo')
+    preferred_by = models.ManyToManyField(User, blank=True, related_name='preferred_meteo')
     """
     The user associated with this location.
     """
@@ -133,6 +134,11 @@ class MeteoItem(models.Model):
         Returns the URL for deleting the location.
         """
         return f"{self.get_absolute_url()}/delete"
+
+    def is_preferred_by(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.preferred_by.filter(pk=user.pk).exists()
 
     def fetch_weather_data(self, url, params):
         """

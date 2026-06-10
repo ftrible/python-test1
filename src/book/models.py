@@ -29,6 +29,7 @@ class Author(models.Model):
     
 class BookItem(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL,related_name='book')
+    preferred_by = models.ManyToManyField(User, blank=True, related_name='preferred_books')
     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name='books')
     image = models.ImageField(upload_to="image/", blank=True, null=True,)
     title = models.CharField(max_length=144)
@@ -46,5 +47,11 @@ class BookItem(models.Model):
         return f"/book/{self.slug}"
     def get_edit_url(self):
         return f"{self.get_absolute_url()}/edit"
+
     def get_delete_url(self):
         return f"{self.get_absolute_url()}/delete"
+
+    def is_preferred_by(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.preferred_by.filter(pk=user.pk).exists()

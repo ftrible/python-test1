@@ -6,14 +6,20 @@
       <small class="text-muted">({{ item.publish_date }})</small>
       {% endif %}
     </div>
-    {% if request.user == item.user %}
+    {% if request.user.is_authenticated %}
     <div class="card-actions">
+      <button type="button" class="btn btn-sm btn-outline-warning pref-toggle {% if request.user in item.preferred_by.all %}active{% endif %}"
+              data-url="{% url 'book_favorite' item.slug %}" title="Preferred">
+        <i class="bi {% if request.user in item.preferred_by.all %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+      </button>
+      {% if request.user == item.user %}
       <a href="{{ item.get_edit_url }}" class="btn btn-sm btn-outline-primary" title="Edit">
         <i class="bi bi-pencil-square"></i>
       </a>
       <a href="{{ item.get_delete_url }}" class="btn btn-sm btn-outline-danger" title="Delete">
         <i class="bi bi-trash"></i>
       </a>
+      {% endif %}
     </div>
     {% endif %}
   </div>

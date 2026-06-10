@@ -93,7 +93,12 @@ def update(request,slug_id):
     if form.is_valid():
         form.save()
         return redirect("/hmeteo")
-    context ={"title": f'Update {pobj.location}', "form": form}
+    context ={
+        "title": f'Update {pobj.location}',
+        "form": form,
+        "is_preferred": pobj.is_preferred_by(request.user),
+        "item": pobj,
+    }
     template="hmeteo/update.html"
     return render(request,template, context)
 
@@ -106,6 +111,19 @@ def delete(request,slug_id):
     context ={"title":'Location Delete', "item": pobj}
     template="hmeteo/delete.html"
     return render(request,template, context)
+
+@login_required(login_url='/login')
+def toggle_preferred(request,slug_id):
+    pobj = get_object_or_404(MeteoItem,slug=slug_id)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if pobj.preferred_by.filter(pk=request.user.pk).exists():
+        pobj.preferred_by.remove(request.user)
+        preferred = False
+    else:
+        pobj.preferred_by.add(request.user)
+        preferred = True
+    return JsonResponse({'preferred': preferred})
 
 @csrf_exempt
 def update_location(request):

@@ -11,7 +11,28 @@ def home_page(request):
     blqueryset=TheItem.objects.all().published()
     boqueryset=BookItem.objects.all()
     hqueryset=MeteoItem.objects.all()
-    context ={"title":'Home',"object_list": blqueryset[:2], "meteo_list": hqueryset[:2], "book_list": boqueryset[:2]}
+
+    if request.user.is_authenticated:
+        preferred_books = BookItem.objects.filter(preferred_by=request.user)
+        preferred_meteo = MeteoItem.objects.filter(preferred_by=request.user)
+        preferred_book_exists = preferred_books.exists()
+        preferred_meteo_exists = preferred_meteo.exists()
+        book_list = preferred_books[:2] if preferred_book_exists else boqueryset[:2]
+        meteo_list = preferred_meteo[:2] if preferred_meteo_exists else hqueryset[:2]
+    else:
+        preferred_book_exists = False
+        preferred_meteo_exists = False
+        book_list = boqueryset[:2]
+        meteo_list = hqueryset[:2]
+
+    context = {
+        "title": 'Home',
+        "object_list": blqueryset[:2],
+        "meteo_list": meteo_list,
+        "book_list": book_list,
+        "preferred_book_exists": preferred_book_exists,
+        "preferred_meteo_exists": preferred_meteo_exists,
+    }
     return render(request,template, context)
 
 # CRUD

@@ -10,6 +10,7 @@ urlpatterns = [
     path('hmeteo/<str:slug_id>/', views.detail, name='detail'),
     path('hmeteo/<str:slug_id>/delete/', views.delete, name='delete'),
     path('hmeteo/<str:slug_id>/edit/', views.update, name='edit'),
+    path('hmeteo/<str:slug_id>/favorite/', views.toggle_preferred, name='hmeteo_favorite'),
     path('hmeteo-new', views.create, name='new'),
 ]
 # to find static and media files
