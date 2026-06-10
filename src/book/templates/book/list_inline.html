@@ -1,10 +1,20 @@
 <div class="card position-relative">
-  <div class="card-header">
-    {{ item.title }}
-    {% if item.publish_date %}
-    <small class="text-muted">({{ item.publish_date}})</small>
-    {% else %}
-
+  <div class="card-header d-flex justify-content-between align-items-start">
+    <div>
+      {{ item.title }}
+      {% if item.publish_date %}
+      <small class="text-muted">({{ item.publish_date }})</small>
+      {% endif %}
+    </div>
+    {% if request.user == item.user %}
+    <div class="card-actions">
+      <a href="{{ item.get_edit_url }}" class="btn btn-sm btn-outline-primary" title="Edit">
+        <i class="bi bi-pencil-square"></i>
+      </a>
+      <a href="{{ item.get_delete_url }}" class="btn btn-sm btn-outline-danger" title="Delete">
+        <i class="bi bi-trash"></i>
+      </a>
+    </div>
     {% endif %}
   </div>
   <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
@@ -19,10 +29,7 @@
       {{ item.content|truncatewords:30|linebreaks }}
     </div>
     <a class="stretched-link" href="{{ item.get_absolute_url }}" aria-label="View {{ item.title }}"></a>
-    {% if request.user == item.user %}
-    <a href="{{ item.get_edit_url }}" class="card-link btn btn-primary">Edit</a>
-    <a href="{{ item.get_delete_url }}" class="card-link btn btn-warning">Delete</a>
-    {% else %}
+    {% if request.user != item.user %}
     <p class="card-text mt-2"><small class="text-muted">Added by {{ item.user }}</small></p>
     {% endif %}
     {% endif %}

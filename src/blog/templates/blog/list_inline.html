@@ -1,23 +1,30 @@
 
 <div class="card">
-    <div class="card-header">from {{item.user}}</div>
+    <div class="card-header d-flex justify-content-between align-items-start">
+        <span>from {{ item.user }}</span>
+        {% if request.user == item.user %}
+        <div class="card-actions">
+            <a href="{{ item.get_edit_url }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{{ item.get_delete_url }}" class="btn btn-sm btn-outline-danger" title="Delete">
+                <i class="bi bi-trash"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
     <div class="card-body {% if not item.publish_date %} border border-warning text-muted {% endif %}">
         {% if item.image %}
             <img src="{{ item.image.url }}" class="w-50 card-img-top img-thumbnail img-fluid"/>
         {% endif%}
-        <h5 class="card-title">{{item.title}}</h5>
-        <small class="text-muted">{{item.publish_date}} </small>
-        {% if detail%}
-        <p class="card-text">{{item.content|linebreaks}}</p>
-        {% else%}
-        <p class="card-text">{{item.content|linebreaks|truncatewords:30}}</p>
-        <a class="card-link btn btn-primary" href="{{item.get_absolute_url}}">View</a>
-        {% if request.user == post.user%}
-        <a href="{{post.get_edit_url}}" class="card-link btn btn-primary">Edit</a>
-        <a href="{{post.get_delete_url}}" class="card-link btn btn-warning">Delete</a>
+        <h5 class="card-title">{{ item.title }}</h5>
+        <small class="text-muted">{{ item.publish_date }} </small>
+        {% if detail %}
+        <p class="card-text">{{ item.content|linebreaks }}</p>
+        {% else %}
+        <p class="card-text">{{ item.content|linebreaks|truncatewords:30 }}</p>
+        <a class="card-link btn btn-primary" href="{{ item.get_absolute_url }}">View</a>
         {% endif %}
-        {% endif%}
         {% if not item.publish_date %} Draft {% endif %}
     </div>
-
 </div>
