@@ -1,5 +1,5 @@
 {% load static %}
-<div class="card">
+<div class="card position-relative">
   <div class="card-header d-flex justify-content-between align-items-start">
     <div>
       <span id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</span>
@@ -34,6 +34,9 @@
       <h5 class="card-title">Weather Forecast</h5>
     {% endif %}
     <canvas id="tc{{ item.id }}" class="card-body"></canvas>
+    {% if not detail %}
+      <a class="stretched-link" href="{{ item.get_absolute_url }}" aria-label="View weather details"></a>
+    {% endif %}
     <script src="{% static 'js/chartConfig.js' %}"></script>
     <script type="text/javascript">
             var tmx{{item.id}} = {{item.get_max_and_min_temps|safe}};
