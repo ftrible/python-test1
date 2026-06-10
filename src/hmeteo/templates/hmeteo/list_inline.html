@@ -1,10 +1,46 @@
 {% load static %}
+<style>
+  .webcam-image {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 3;
+    pointer-events: auto !important;
+  }
+  .webcam-image.expanded {
+    position: fixed !important;
+    width: 90vw !important;
+    height: 90vh !important;
+    object-fit: contain !important;
+    z-index: 1000;
+    border-radius: 8px;
+    top: 5vh !important;
+    left: 5vw !important;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .webcam-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: none;
+    cursor: pointer;
+  }
+  .webcam-overlay.show {
+    display: block;
+  }
+</style>
 <div class="card position-relative">
   <div class="card-header d-flex justify-content-between align-items-start">
     <div>
       <span id="card-header-{{ item.id }}" data-item-id="{{ item.id }}">{{ item.location }}</span>
       {% if item.get_windy_webcam_image %}
-      <img id="bckw{{ item.id }}" src="{{ item.get_windy_webcam_image }}" class="w-25 rounded img-fluid ms-3" />
+      <img id="bckw{{ item.id }}" src="{{ item.get_windy_webcam_image }}" class="webcam-image w-25 rounded img-fluid ms-3" data-expanded="false" />
       {% endif %}
     </div>
     {% if request.user.is_authenticated %}
@@ -34,9 +70,6 @@
       <h5 class="card-title">Weather Forecast</h5>
     {% endif %}
     <canvas id="tc{{ item.id }}" class="card-body"></canvas>
-    {% if not detail %}
-      <a class="stretched-link" href="{{ item.get_absolute_url }}" aria-label="View weather details"></a>
-    {% endif %}
     <script src="{% static 'js/chartConfig.js' %}"></script>
     <script type="text/javascript">
             var tmx{{item.id}} = {{item.get_max_and_min_temps|safe}};
@@ -221,6 +254,41 @@
                   })
                   .catch(error => {
                     console.error('Error:', error);
+                  });
+                }
+                
+                // Handle webcam image expand/collapse
+                const webcamImg = document.getElementById('bckw{{ item.id }}');
+                const stretchedLink = document.querySelector('.card:has(#bckw{{ item.id }}) .stretched-link');
+                
+                if (webcamImg) {
+                  const overlay = document.createElement('div');
+                  overlay.className = 'webcam-overlay';
+                  document.body.appendChild(overlay);
+                  
+                  function toggleExpand() {
+                    const isExpanded = webcamImg.getAttribute('data-expanded') === 'true';
+                    if (isExpanded) {
+                      webcamImg.classList.remove('expanded');
+                      webcamImg.setAttribute('data-expanded', 'false');
+                      overlay.classList.remove('show');
+                      if (stretchedLink) stretchedLink.style.pointerEvents = 'auto';
+                    } else {
+                      webcamImg.classList.add('expanded');
+                      webcamImg.setAttribute('data-expanded', 'true');
+                      overlay.classList.add('show');
+                      if (stretchedLink) stretchedLink.style.pointerEvents = 'none';
+                    }
+                  }
+                  
+                  webcamImg.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    toggleExpand();
+                  });
+                  
+                  overlay.addEventListener('click', function() {
+                    toggleExpand();
                   });
                 }
               });              
