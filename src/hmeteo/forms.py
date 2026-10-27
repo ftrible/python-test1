@@ -2,11 +2,7 @@ from django import forms
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from .models import MeteoItem
-import os
-# https://opencagedata.com/dashboard#geocoding
-# See full Python tutorial:
-# https://opencagedata.com/tutorials/geocode-in-python
-from opencage.geocoder import OpenCageGeocode
+from geopy.geocoders import Nominatim
 class MeteoForm(forms.ModelForm):
     class Meta:
         model=MeteoItem
@@ -20,21 +16,13 @@ class MeteoForm(forms.ModelForm):
             self.data['location'] = 'Default Location'  # Set your default value here
     def save(self, commit=True):
         instance = super(MeteoForm, self).save(commit=False)
-        # Get latitude and longitude from OpenCageGeocode API
+        # Get latitude and longitude from Nominatim geocoding API
         location_name = self.cleaned_data['location']
-        api_key = os.environ.get('OPENCAGE_API_KEY')
-        if not api_key:
-            raise ValidationError('OpenCage API key not configured')
-        OCG = OpenCageGeocode(api_key)
-        results = OCG.geocode(location_name)
-        if len(results) > 1:
-            # Show a dialog to select the desired location
-            print("More than 1 " + str(len(results)))
-            pass
-        elif len(results) == 1:
-            result = results[0]
-            instance.lat = result['geometry']['lat']
-            instance.lng = result['geometry']['lng']
+        geolocator = Nominatim(user_agent="hmeteo_geocoder")
+        location = geolocator.geocode(location_name)
+        if location:
+            instance.lat = location.latitude
+            instance.lng = location.longitude
             instance.slug = self.generate_unique_slug(location_name)
         else:
             raise ValidationError("Geocoding failed for the provided location.")
