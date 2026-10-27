@@ -7,7 +7,10 @@ from django.http import JsonResponse
 # https://opencagedata.com/dashboard#geocoding
 # See full Python tutorial:
 # https://opencagedata.com/tutorials/geocode-in-python
-from opencage.geocoder import OpenCageGeocode
+try:
+    from opencage.geocoder import OpenCageGeocode
+except ModuleNotFoundError:  # pragma: no cover - optional dependency in some deployments
+    OpenCageGeocode = None
 import json
 import os
 
@@ -65,6 +68,8 @@ def geocode(request):
     data_dict = json.loads(json_data)
     location_name = data_dict.get('location_name')
     print(location_name)
+    if OpenCageGeocode is None:
+        return JsonResponse({'error': 'OpenCage dependency is not installed in this environment'}, status=500)
     api_key = os.environ.get('OPENCAGE_API_KEY')
     if not api_key:
         return JsonResponse({'error': 'OpenCage API key not configured'}, status=500)

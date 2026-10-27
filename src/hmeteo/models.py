@@ -4,7 +4,6 @@ from django.db.models import Q
 from openmeteo_requests import Client  # Import the Open-Meteo API client
 from retry_requests import retry  # Import retry library for handling API errors
 from datetime import datetime, timedelta  # Import datetime for date calculations
-from requests_cache import CachedSession  # Import caching library for API responses
 from django.core.exceptions import ValidationError  # Import validation error handling
 import pandas as pd  # Import pandas for data manipulation
 from userprofile.models import UserProfile  # Import UserProfile model
@@ -90,7 +89,7 @@ class MeteoItem(models.Model):
         return f"{self.slug} by {self.user}: '{self.location}' {self.lat}°, {self.lng}°"
 
     def clean(self):
-        """
+        """        python manage.py runserver
         Validates the latitude and longitude values.
         """
         super().clean()  # Call the parent class's clean method
@@ -170,9 +169,12 @@ class MeteoItem(models.Model):
         Returns:
             A dictionary containing weather data, or None if an error occurs.
         """
-        cache_session = CachedSession('.cache', expire_after=3600)  # Create a cached session
-        retry_session = retry(cache_session, retries=5, backoff_factor=0.2)  # Create a retry session
-        openmeteo = Client(session=retry_session)  # Create an Open-Meteo API client
+        # Use a plain requests Session here instead of CachedSession because the cached-session
+        # implementation can trigger runtime compatibility issues with newer requests versions
+        # (e.g. RequestsCookieJar NameError in the dependency stack).
+        base_session = requests.Session()
+        retry_session = retry(base_session, retries=5, backoff_factor=0.2)
+        openmeteo = Client(session=retry_session)
 
         try:
             responses = openmeteo.weather_api(url, params=params)  # Make the API request
